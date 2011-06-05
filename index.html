@@ -1,0 +1,47 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <body onload="prettyPrint()">
+    <div id="title">
+      <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+    </div>
+
+    <p class="links"><a href="readme.html">Readme</a> // <a href="design.html">Design</a> // <a href="installing.html">Installing</a> // <a href="https://github.com/j2labs/brubeck">Code</a></p>
+
+<h1>What Is Brubeck?</h1>
+
+<p><strong>Brubeck</strong> is a flexible Python web framework that aims to make the process of building scalable web services easy.</p>
+
+<p>Build for scale at the same time you're prototyping your idea.</p>
+
+<h1>Learn More</h1>
+
+<p>The <a href="readme.html">documentation</a> goes into much more detail about Brubeck's design. </p>
+
+<p>You will find lots of code samples for designing request handler, authentication, cookies, and rendering templates.</p>
+
+<h1>Example: Hello World</h1>
+
+<p>This is a whole Brubeck application. </p>
+
+<pre><code class="prettyprint">class DemoHandler(WebMessageHandler):
+    def get(self):
+        self.set_body('Hello world')
+        return self.render()
+
+urls = [(r'^/', DemoHandler)]
+mongrel2_pair = ('ipc://127.0.0.1:9999', 'ipc://127.0.0.1:9998')
+
+app = Brubeck(mongrel2_pair=mongrel2_pair,
+              handler_tuples=urls)
+app.run()
+</code></pre>
+
+  </body>
+</html>

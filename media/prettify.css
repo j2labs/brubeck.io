@@ -1,0 +1,40 @@
+.str { color: #8fa2b4; }
+.kwd { color: #68a9d5; }
+.com { color: #844; }
+.typ { color: #a773a7; }
+.lit { color: #399; }
+.pun { color: #993; }
+.pln { color: #ccc; }
+.tag { color: #2a8dd0; }
+.atn { color: #a773a7; }
+.atv { color: #365c7f; }
+.dec { color: #a773a7; }
+
+@media print {
+    .str { color: #060; }
+    .kwd { color: #006; font-weight: bold; }
+    .com { color: #600; font-style: italic; }
+    .typ { color: #404; font-weight: bold; }
+    .lit { color: #044; }
+    .pun { color: #440; }
+    .pln { color: #000; }
+    .tag { color: #006; font-weight: bold; }
+    .atn { color: #404; }
+    .atv { color: #060; }
+}
+
+pre {
+    background: #0e2125;
+    padding: 20px;
+    border-top: 1px dashed #5E686C;
+    border-bottom: 1px dashed #5E686C;
+    margin-bottom: 15px;
+    overflow: auto;
+    white-space: nowrap;
+}
+
+code {
+    background: #0e2125;
+    font-size: 14px;
+    line-height: 130%;
+}

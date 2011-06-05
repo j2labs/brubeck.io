@@ -1,0 +1,128 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <body onload="prettyPrint()">
+    <div id="title">
+      <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+    </div>
+
+    <p class="links"><a href="readme.html">Readme</a> // <a href="design.html">Design</a> // <a href="installing.html">Installing</a> // <a href="https://github.com/j2labs/brubeck">Code</a></p>
+
+<h1>Installing the environment</h1>
+
+<p>First, we have to install a few things. Brubeck depends on Mongrel2, ZeroMQ and a few python packages.</p>
+
+<p>All three packages live in github, so we'll clone the repos to our Desktop.</p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop
+$ git clone https://github.com/j2labs/brubeck.git
+$ git clone https://github.com/zeromq/libzmq.git
+$ git clone https://github.com/zedshaw/mongrel2.git
+</code></pre>
+
+<h2>ZeroMQ</h2>
+
+<p>For us, ZeroMQ is actually two pieces: libzmq and pyzmq. libzmq must be installed by hand like you see below.</p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop/libzmq
+$ git checkout -b v2.1.7 49df2f416cd43e9e18f3dbd964271c5cca835729
+$ ./autogen.sh
+$ ./configure  ## for mac ports use: ./configure --prefix=/opt/local
+$ make 
+$ sudo make install
+</code></pre>
+
+<h2>Mongrel2</h2>
+
+<p>Mongrel2 is also painless to setup.</p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop/mongrel2
+$ git checkout -b v1.5 996e9115ba603da473efb5568f413a1e8241a3b0
+$ make  ## for mac ports use: make macports
+$ sudo make install
+</code></pre>
+
+<h2>Python packages &amp; Brubeck</h2>
+
+<p>First, brubeck work great with virtualenv. I recommend using</p>
+
+<p>If you have pip installed, you can use the requirements file. </p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop/brubeck
+$ pip install -I -r ./requirements.txt
+</code></pre>
+
+<p>If you don't have <code>pip</code>, you can <code>easy_install</code> the libraries listed.</p>
+
+<h3>Brubeck itself</h3>
+
+<p>As the last step, install Brubeck.</p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop/brubeck
+$ python setup.py install
+</code></pre>
+
+<h1>A demo</h1>
+
+<p>Assuming the environment installation went well we can now turn on Brubeck.</p>
+
+<p>First, we setup the Mongrel2 config.</p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop/brubeck/demo
+$ m2sh load -config mongrel2.conf -db dev.db
+$ m2sh start --db dev.db --host localhost
+</code></pre>
+
+<p>Now we'll turn on a Brubeck instance.</p>
+
+<pre><code class="prettyprint">$ cd ~/Desktop/brubeck/demos
+$ ./demo_minimal.py
+</code></pre>
+
+<p>If you see <code>Brubeck v0.x.x online ]------------</code> we can try loading a URL in a browser. 
+Now try [a web request(http://localhost:6767/brubeck/).</p>
+
+<h2>Mongrel2 configuration</h2>
+
+<p>Mongrel2 is a separate process from Brubeck, so it is configured separately.</p>
+
+<p>This is what the Mongrel2 configuration looks like for the demo project.</p>
+
+<pre><code class="prettyprint">brubeck_handler = Handler(
+    send_spec='ipc://127.0.0.1:9999',
+    send_ident='34f9ceee-cd52-4b7f-b197-88bf2f0ec378',
+    recv_spec='ipc://127.0.0.1:9998', 
+    recv_ident='')
+
+brubeck_host = Host(
+    name="localhost", 
+    routes={'/': brubeck_handler})
+
+brubeck_serv = Server(
+    uuid="f400bf85-4538-4f7a-8908-67e313d515c2",
+    access_log="/log/mongrel2.access.log",
+    error_log="/log/mongrel2.error.log",
+    chroot="./",
+    default_host="localhost",
+    name="brubeck test",
+    pid_file="/run/mongrel2.pid",
+    port=6767,
+    hosts = [brubeck_host])
+
+settings = {"zeromq.threads": 1}
+
+servers = [brubeck_serv]
+</code></pre>
+
+<p>In short, it says any requests for <code>http://localhost:6767/</code> should be sent to the Brubeck handler. </p>
+
+<p>The web server is also configured to answer requests on port <code>6767</code>, logging to <code>./log</code> directory and puts the mongrel2 pid in a pidfile in the <code>./run</code> directory.</p>
+
+  </body>
+</html>
