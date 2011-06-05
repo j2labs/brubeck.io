@@ -22,16 +22,16 @@
 
 <pre><code class="prettyprint">$ cd ~/Desktop
 $ git clone https://github.com/j2labs/brubeck.git
-$ git clone https://github.com/zeromq/libzmq.git
 $ git clone https://github.com/zedshaw/mongrel2.git
+$ wget http://download.zeromq.org/zeromq-2.1.7.tar.gz 
+$ tar zxf zeromq-2.1.7.tar.gz
 </code></pre>
 
 <h2>ZeroMQ</h2>
 
 <p>For us, ZeroMQ is actually two pieces: libzmq and pyzmq. libzmq must be installed by hand like you see below.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/libzmq
-$ git checkout -b v2.1.7 49df2f416cd43e9e18f3dbd964271c5cca835729
+<pre><code class="prettyprint">$ cd ~/Desktop/zeromq-2.1.7    
 $ ./autogen.sh
 $ ./configure  ## for mac ports use: ./configure --prefix=/opt/local
 $ make 
@@ -43,7 +43,6 @@ $ sudo make install
 <p>Mongrel2 is also painless to setup.</p>
 
 <pre><code class="prettyprint">$ cd ~/Desktop/mongrel2
-$ git checkout -b v1.5 996e9115ba603da473efb5568f413a1e8241a3b0
 $ make  ## for mac ports use: make macports
 $ sudo make install
 </code></pre>
@@ -123,6 +122,8 @@ servers = [brubeck_serv]
 <p>In short, it says any requests for <code>http://localhost:6767/</code> should be sent to the Brubeck handler. </p>
 
 <p>The web server is also configured to answer requests on port <code>6767</code>, logging to <code>./log</code> directory and puts the mongrel2 pid in a pidfile in the <code>./run</code> directory.</p>
+
+<h1>Brubeck.io</h1>
 
   </body>
 </html>
