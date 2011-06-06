@@ -4,7 +4,6 @@
     <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
     <link rel=stylesheet type="text/css" href="media/style.css"> 
     <link rel=stylesheet type="text/css" href="media/prettify.css"> 
-    <meta name="viewport" content="width=600;" />
     <script type="text/javascript" src="js/prettify.js"></script>
   </head>
 
@@ -24,15 +23,15 @@
 <ul>
 <li><p><strong>Be Fast</strong>: Brubeck is currently very fast. We intend to keep it that way.</p></li>
 <li><p><strong>Scalable</strong>: Massive scaling capabilities should be available out of the box.</p></li>
-<li><p><strong>Friendly</strong>: All of the speed and scale should be available to Python hackers of any skill level.</p></li>
-<li><p><strong>Pluggable</strong>: Brubeck can speak to any language and any database - it will fit nicely in your current network.</p></li>
+<li><p><strong>Friendly</strong>: Should be easy for Python hackers of any skill level to use.</p></li>
+<li><p><strong>Pluggable</strong>: Brubeck can speak to any language and any database.</p></li>
 </ul>
 
 <h1>Dependencies</h1>
 
-<p>Brubeck leverages a few awesome Python packages for most of it's magic.</p>
+<p>Brubeck leverages a few awesome Python packages for most of it's magic. Credit must be given where credit is due. </p>
 
-<p>Credit must be given where credit is due.</p>
+<p>Feel free to skip to The General Design further down if you understand the dependencies.</p>
 
 <h2>Mongrel2 + ZeroMQ</h2>
 
@@ -40,7 +39,7 @@
 
 <p>This decoupling of the webserver from the request handling allows for interesting web service topologies. It also allows for easy scaling, since you can simply connect a new handler to existing Mongrel2 instances and immediately become part of the handler pool.</p>
 
-<p>Similarly, if a handler dies, it is removed from the pool immediately. Contrast this vs nginx likely waiting 10 seconds before it notices the host is down.</p>
+<p>Similarly, if a handler dies, it is removed from the pool immediately. Contrast this with nginx likely waiting 10 seconds before it notices the upstream host is down.</p>
 
 <ul>
 <li><a href="http://mongrel2.org">Mongrel2</a></li>
@@ -49,19 +48,45 @@
 
 <h2>Eventlet</h2>
 
-<p>Eventlet is a concurrent networking library for Python. We get concurrency in the form of coroutines and an implicit scheduler. The coroutines, which can be thought of as a replacement for threads, are very cheap. So cheap that you don't have to think too hard on how many you spawn. </p>
+<p>Eventlet is a concurrent networking library for Python. We get concurrency in the form of <a href="http://pypi.python.org/pypi/greenlet">coroutines</a> and an implicit scheduler. The coroutines, which can be thought of as something of a replacement for threads, are very cheap. So cheap that you don't have to think too hard on how many you spawn. </p>
 
-<p>Brubeck, then, is a pipeline of coroutines attempting to fulfill web requests. By using greenlets in conjunction with a scheduler, Eventlet has the necessary pieces to handle nonblocking I/O for us.</p>
+<h3>Coroutines</h3>
 
-<p>It can even monkey patch existing Python code, by providing new modules for socket, threading and others. Modules written entirely in Python likely depend on these, so Eventlet transforms them coroutine friendly at a very low level.</p>
+<p>Brubeck is basically a pipeline of coroutines attempting to fulfill web requests. By using coroutines in conjunction with a scheduler, Eventlet has the necessary pieces to also provide nonblocking I/O.</p>
+
+<p>Python programmers have seen asynchronous, nonblocking I/O typically done as a chain of callbacks that interact with a scheduler. System design can become foggy when many callbacks are chained together. And, many drivers for things like databases are synchronous / blocking too, so steps must be taken to make them compatible.</p>
+
+<h3>Back To Eventlet</h3>
+
+<p>Eventlet makes this easier through implicit context switching. Each time your code reaches a I/O point, eventlet will step in and switch to some other coroutines and handle the complication for you, implicitly.</p>
+
+<p>Brubeck then shares time between reading Mongrel2 messages, processing the messages, and writing responses back to Mongrel2. Your request handler is inserted inbetween those steps, making all of your I/O calls part of the asynchronous, nonblocking system automatically.</p>
+
+<p>The end result is that your code looks synchronous (read: no callback spaghetti)</p>
 
 <ul>
 <li><a href="http://eventlet.net">Evenlet</a>.</li>
 </ul>
 
+<h3>Alternatives</h3>
+
+<p>Some folks prefer <a href="http://gevent.org">gevent</a> over eventlet. Brubeck has a branch adding support for that. (Thanks <a href="https://github.com/d1on">d1on</a></p>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/tree/gevent">gevent support</a></li>
+</ul>
+
+<p>There are also reasonable arguments for explicit context switching. If prefer that model, I recommend the systems below:</p>
+
+<ul>
+<li><a href="http://twistedmatrix.com/">Twisted Project</a></li>
+<li><a href="http://nodejs.org">Node.js</a></li>
+<li><a href="https://bitbucket.org/justin/webmachine/wiki/Home">Web Machine</a></li>
+</ul>
+
 <h2>DictShield</h2>
 
-<p>DictShield offers input validation and structuring without taking a stance on what database you should be using. There are many good reasons to use all kinds of databases. DictShield only cares about Python structures, so if you can get your data into those, DictShield will handle the rest. </p>
+<p>DictShield offers input validation and structuring without taking a stance on what database you should be using. There are many good reasons to use all kinds of databases. DictShield only cares about Python dictionaries. If you can get your data into those, DictShield will handle the rest. </p>
 
 <p>DictShield strives to be database agnostic in the same way that Mongrel2 is language agnostic.</p>
 
@@ -73,9 +98,17 @@
 
 <p>Now that we know what the dependencies offer, let's consider how to put them together. </p>
 
-<p>The general idea is to pull a message off the ZeroMQ socket, route it to the correct function for handling it and then send a response back to Mongrel2. As said in the README, the message is done via three coroutines. If you are implementing a message handler, your code would run in the second coroutine.</p>
+<p>The general idea is to pull a message off the ZeroMQ socket, route it to the correct function for handling it and then send a response back to Mongrel2. This process takes place across three coroutines. If you are implementing a message handler, your code would run in the second coroutine. The other two are hidden away inside Brubeck for pre and post-processing.</p>
 
-<p>Setting up a Brubeck instance is then as simple as configuring two ZeroMQ sockets and some routes for handling URL's.</p>
+<p>To set up a Brubeck instance, you configure two ZeroMQ sockets, some routes for handling URL's, and call <code>run()</code>.</p>
+
+<pre><code class="prettyprint">config = {
+    'mongrel2_pair': ('ipc://127.0.0.1:9999', 'ipc://127.0.0.1:9998')
+    'handler_tuples': [(r'^/url/path, SomeHandler)]
+}
+
+Brubeck(**config).run()
+</code></pre>
 
 <h2>request_handling.py</h2>
 

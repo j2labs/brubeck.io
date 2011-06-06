@@ -4,7 +4,6 @@
     <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
     <link rel=stylesheet type="text/css" href="media/style.css"> 
     <link rel=stylesheet type="text/css" href="media/prettify.css"> 
-    <meta name="viewport" content="width=600;" />
     <script type="text/javascript" src="js/prettify.js"></script>
   </head>
 
@@ -19,9 +18,7 @@
 
 <p><strong>Brubeck</strong> is a flexible Python web framework that aims to make the process of building scalable web services easy.</p>
 
-<p>The Brubeck model resembles what companies build when they operate at large scale, yet the experience couldn't be much simpler.</p>
-
-<p>Build for scale at the same time you're prototyping your idea.</p>
+<p>The Brubeck model resembles what companies build when they operate at large scale, yet the experience couldn't be much simpler. There are no confusing callback's that obfuscate the code. No strong opinions about what database you should use. And a familiar style that users of Tornado or Flask will recognize.</p>
 
 <h2>Example: Hello World</h2>
 
@@ -42,7 +39,7 @@ app.run()
 
 <h2>Features</h2>
 
-<p>Brubeck gets by with a little help from these friends:</p>
+<p>Brubeck gets by with a little help from it's friends:</p>
 
 <ul>
 <li><a href="http://mongrel2.org">Mongrel2</a>: lean &amp; fast, asynchronous web serving</li>
@@ -51,11 +48,13 @@ app.run()
 <li><a href="https://github.com/j2labs/dictshield">DictShield</a>: data modeling &amp; validation with no database opinions</li>
 </ul>
 
+<p>It's also quite fast. Please see this completely unscientific comparison of Brubeck and Tornado: <a href="https://gist.github.com/882555">https://gist.github.com/882555</a>.</p>
+
 <h2>Complete Example: Listsurf</h2>
 
 <p><strong>Listsurf</strong> is a simple to way to save links. Yeah... another delicious clone!</p>
 
-<p>It serves as a basic demonstration of what a complete site looks like when you built with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
+<p>It serves as a basic demonstration of what a complete site looks like when you build with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
 
 <ul>
 <li><a href="https://github.com/j2labs/listsurf">Listsurf on GitHub</a></li>
@@ -63,21 +62,21 @@ app.run()
 
 <h1>Closer Look At The Code</h1>
 
-<p>In this section we'll discuss writing request handler, adding user authentication and rendering pages with templates.</p>
+<p>In this section we'll discuss writing a request handler, adding user authentication and rendering pages with templates.</p>
 
 <h2>Handling Requests</h2>
 
 <p>The framework can be used for different requirements. It can be lean and lightweight for high throughput or you can fatten it up and use it for rendering pages in a database backed CMS.</p>
 
-<p>The general architecture of the system is to map requests for a specific URL to some <a href="http://docs.python.org/library/functions.html#callable">callable</a> to handle it. The configuration attempts to match handlers to URL's by inspecting a list of <code>(url pattern, callable)</code> tuples.</p>
+<p>The general architecture of the system is to map requests for a specific URL to some <a href="http://docs.python.org/library/functions.html#callable">callable</a> for processing the request. The configuration attempts to match handlers to URL's by inspecting a list of <code>(url pattern, callable)</code> tuples.</p>
 
 <p>Some people like to use classes as handlers. Some folks prefer to use functions. Brubeck supports both.</p>
 
 <h3>MessageHandler Classes</h3>
 
-<p>When a class model is used, the class will be instantiated for the life of the request and then thrown away. This makes building state for each request fairly easy, since you can just attach members to <code>self</code> knowing that memory will be back soon.</p>
+<p>When a class model is used, the class will be instantiated for the life of the request and then thrown away. This makes building state for each request fairly easy.</p>
 
-<p>Brubeck's <code>MessageHandler</code> design is similar to what you see in <a href="https://github.com/facebook/tornado">Facebook's Tornado</a>, or <a href="http://webpy.org/">web.py</a>.</p>
+<p>Brubeck's <code>MessageHandler</code> design is similar to what you see in <a href="https://github.com/facebook/tornado">Tornado</a>, or <a href="http://webpy.org/">web.py</a>. </p>
 
 <p>To answer HTTP GET requests, implement <code>get()</code> on a WebMessageHandler instance.</p>
 
@@ -87,15 +86,14 @@ app.run()
         return self.render()
 </code></pre>
 
-<p>Then we add <code>DemoHandler</code> to the routing config instantiate a Brubeck instance. </p>
-
-<p>That looks like this:</p>
+<p>Then we add <code>DemoHandler</code> to the routing config and instantiate a Brubeck instance. </p>
 
 <pre><code class="prettyprint">urls = [(r'^/brubeck', DemoHandler)]
 config = {
     'handler_tuples': urls,
     ...
 }
+
 Brubeck(**config).run()
 </code></pre>
 
@@ -125,9 +123,9 @@ app.run()
 
 <h2>Templates</h2>
 
-<p>Templates support is contained in <code>brubeck.templates</code> as rendering mixins. Brubeck currently supports <a href="http://jinja.pocoo.org/">Jinja2</a> or <a href="http://www.tornadoweb.org/documentation#templates">Tornado</a> templates.</p>
+<p>Brubeck currently supports <a href="http://jinja.pocoo.org/">Jinja2</a> or <a href="http://www.tornadoweb.org/documentation#templates">Tornado</a> templates.</p>
 
-<p>Each Mixin will attach a <code>render_template</code> function to your handler and overwrite the default <code>render_error</code> to produce templated errors messages.</p>
+<p>Template support is contained in <code>brubeck.templates</code> as rendering mixins. Each Mixin will attach a <code>render_template</code> function to your handler and overwrite the default <code>render_error</code> to produce templated errors messages.</p>
 
 <p>Using a template system is then as easy as calling <code>render_template</code> with the template filename and some context, just like you're used to.</p>
 
@@ -165,6 +163,24 @@ class DemoHandler(WebMessageHandler, TornadoRendering):
 <li><a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/tornado">Demo templates</a></li>
 </ul>
 
+<h3>Template loading</h3>
+
+<p>Along with the template rendering, you must provide the path to your templates. If Jinja2 templates serve your needs, Providing that path in a call to <code>load_jinja2_env</code> is all you need.</p>
+
+<p>That looks like this:</p>
+
+<pre><code class="prettyprint">from brubeck.templating import load_jinja2_env
+
+config = {
+    template_loader=load_jinja2_env('./templates/jinja2')
+    ...
+}
+</code></pre>
+
+<p>If you have something more sophisticated in mind, you'll be glad to know <code>load_jinja2_env</code> actually returns the template loading function provided by each rendering engine. </p>
+
+<p>Swap in whatever rendering engine you like best.</p>
+
 <h2>Auth</h2>
 
 <p>Authentication can be provided by decorating functions with the <code>@web_authenticated</code> decorator. This decorator expects the handler to have a <code>current_user</code> property that returns either an authenticated <code>User</code> model or None. </p>
@@ -189,7 +205,11 @@ class DemoHandler(WebMessageHandler, UserHandlingMixin):
     """Bare minimum to have the concept of a User.
     """
     username = StringField(max_length=30, required=True)
+    email = EmailField(max_length=100)
     password = StringField(max_length=128)
+    is_active = BooleanField(default=False)
+    last_login = LongField(default=curtime)
+    date_joined = LongField(default=curtime)        
     ...
 </code></pre>
 
@@ -209,7 +229,7 @@ class DemoHandler(WebMessageHandler, UserHandlingMixin):
 }
 </code></pre>
 
-<p>You then attempt to retrieve the cookie value by passing the application's secret key into the <code>get_cookie</code> function.</p>
+<p>Then retrieve the cookie value by passing the application's secret key into the <code>get_cookie</code> function.</p>
 
 <pre><code class="prettyprint"># Try loading credentials from secure cookie
 user_id = self.get_cookie('user_id',

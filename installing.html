@@ -4,7 +4,6 @@
     <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
     <link rel=stylesheet type="text/css" href="media/style.css"> 
     <link rel=stylesheet type="text/css" href="media/prettify.css"> 
-    <meta name="viewport" content="width=600;" />
     <script type="text/javascript" src="js/prettify.js"></script>
   </head>
 
@@ -50,9 +49,43 @@ $ sudo make install
 
 <h2>Python packages &amp; Brubeck</h2>
 
-<p>First, brubeck work great with virtualenv. I recommend using</p>
+<p>Brubeck works great with virtualenv. I highly recommend using it. </p>
 
-<p>If you have pip installed, you can use the requirements file. </p>
+<p>In fact, let's stop for a second and talk about it.</p>
+
+<h3>virtualenv &amp; virtualenvwrapper</h3>
+
+<p>Virtualenv is a way to construct isolated python environments. Very handy for managing multiple environments in a single machine.</p>
+
+<p>Install both virtualenv and virtualenvwrapper with <code>pip</code>.</p>
+
+<pre><code class="prettyprint">pip install virtualenv virtualenvwrapper
+</code></pre>
+
+<p>Then, we must configure our shell to know where to store our virtualenv's. While we're there, we'll source the virtualenvwrapper shell script.</p>
+
+<p>Open your <code>.profile</code> or <code>.bashrc</code> and add the following two lines.</p>
+
+<pre><code class="prettyprint">export WORKON_HOME="~/.virtualenvs"
+source /usr/local/bin/virtualenvwrapper
+</code></pre>
+
+<p>By sourcing virtualenvwrapper, you get a simple interface for creating, managing and removing virutalenv environments.</p>
+
+<pre><code class="prettyprint">$ mkvirtualenv &lt;env_name&gt; # Creates a virtual environment
+$ deactivate              # Turn off a virtual environment
+$ workon &lt;env_name&gt;       # Turn on a virtual environment
+</code></pre>
+
+<p>For more information, see my quick &amp; dirty howto.</p>
+
+<ul>
+<li><a href="http://j2labs.tumblr.com/post/5181438807/quick-dirty-virtualenv-virtualenvwrapper">Quick &amp; Dirty Virtualenv &amp; Virtualenvwrapper</a></li>
+</ul>
+
+<h2>Back to Python packages &amp; Brubeck</h2>
+
+<p>If you have pip installed, you can install everything with the requirements file. </p>
 
 <pre><code class="prettyprint">$ cd ~/Desktop/brubeck
 $ pip install -I -r ./requirements.txt
@@ -122,7 +155,7 @@ servers = [brubeck_serv]
 
 <p>In short, it says any requests for <code>http://localhost:6767/</code> should be sent to the Brubeck handler. </p>
 
-<p>The web server is also configured to answer requests on port <code>6767</code>, logging to <code>./log</code> directory and puts the mongrel2 pid in a pidfile in the <code>./run</code> directory.</p>
+<p>The web server answers requests on port <code>6767</code>. It logs to the <code>./log</code> directory. It also writes a pidfile in the <code>./run</code> to the run directory. </p>
 
 <h1>Brubeck.io</h1>
 
