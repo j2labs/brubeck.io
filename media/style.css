@@ -2,7 +2,6 @@ body {
     font-family: 'Verdana', arial, serif;
     margin: auto;
     width: 600px;
-    background: #081818;
     background: #0a191c;
     font-size: 10pt;
 }
@@ -37,13 +36,12 @@ p {
     margin-left: 20px;
     margin-right: 20px;
     line-height: 150%;
-    color: #a5b2b7;
+    color: #8899aa;
 }
 
 ul, ol {
     padding-bottom: 20px;
-    color: #a5b2b7;
-    color: #999;
+    color: #8899aa;
 }
 
 pre {
