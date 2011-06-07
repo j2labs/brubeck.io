@@ -174,9 +174,9 @@ class DemoHandler(WebMessageHandler, TornadoRendering):
 <li><a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/tornado">Demo templates</a></li>
 </ul>
 
-<h3>Template loading</h3>
+<h3>Template Loading</h3>
 
-<p>Along with the template rendering, you must provide the path to your templates. If Jinja2 templates serve your needs, Providing that path in a call to <code>load_jinja2_env</code> is all you need.</p>
+<p>In addition to using a rendering mixin, you need to provide the path to your templates.</p>
 
 <p>That looks like this:</p>
 
@@ -188,9 +188,17 @@ config = {
 }
 </code></pre>
 
-<p>If you have something more sophisticated in mind, you'll be glad to know <code>load_jinja2_env</code> actually returns the template loading function provided by each rendering engine. </p>
+<p>Using a function here keeps the config lightweight.</p>
 
-<p>Swap in whatever rendering engine you like best.</p>
+<h3>Custom Rendering</h3>
+
+<p>If you have something else in mind, you'll be glad to know <code>template_loader</code> can be any callable that loads a rendering environment. Brubeck calls this during initialization and attaches the output to <code>self.application.template_env</code>.</p>
+
+<p>The current convention is for handlers to provide a <code>render_template</code> and <code>render_error</code> function. These functions typically use <code>self.application.template_env</code> to render request specific data.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/brubeck/templating.py#L1">brubeck.templating</a></li>
+</ul>
 
 <h2>Auth</h2>
 
