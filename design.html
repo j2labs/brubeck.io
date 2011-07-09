@@ -19,6 +19,10 @@
 
 <p>Brubeck processes and responds to messages sent from Mongrel2. By splitting the processing into a pipeline of lightweight <a href="http://en.wikipedia.org/wiki/Coroutine">coroutines</a>, Brubeck can handle a large number of tasks simultaneously. Many more tasks than tradition OS threads allow.</p>
 
+<p>Veteran Python hackers can probably skip past the dependencies section.</p>
+
+<p>Please keep reading if you're unfamiliar with ZeroMQ, Eventlet, Mongrel2 or DictShield for a brief introduction to each.</p>
+
 <h2>Goals</h2>
 
 <ul>
@@ -31,8 +35,6 @@
 <h1>Dependencies</h1>
 
 <p>Brubeck leverages a few awesome Python packages for most of it's magic. Credit must be given where credit is due. </p>
-
-<p>Feel free to skip to The General Design further down if you understand the dependencies.</p>
 
 <h2>Mongrel2 + ZeroMQ</h2>
 
@@ -105,7 +107,7 @@
 
 <pre><code class="prettyprint">config = {
     'mongrel2_pair': ('ipc://127.0.0.1:9999', 'ipc://127.0.0.1:9998')
-    'handler_tuples': [(r'^/url/path, SomeHandler)]
+    'handler_tuples': [(r'^/url/path', SomeHandler)]
 }
 
 Brubeck(**config).run()

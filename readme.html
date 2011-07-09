@@ -79,13 +79,13 @@ app.run()
 
 <p>The framework can be used for different requirements. It can be lean and lightweight for high throughput or you can fatten it up and use it for rendering pages in a database backed CMS.</p>
 
-<p>The general architecture of the system is to map requests for a specific URL to some <a href="http://docs.python.org/library/functions.html#callable">callable</a> for processing the request. The configuration attempts to match handlers to URL's by inspecting a list of <code>(url pattern, callable)</code> tuples.</p>
+<p>The general architecture of the system is to map requests for a specific URL to some <a href="http://docs.python.org/library/functions.html#callable">callable</a> for processing the request. The configuration attempts to match handlers to URL's by inspecting a list of <code>(url pattern, callable)</code> tuples. First regex to match provides the callable.</p>
 
 <p>Some people like to use classes as handlers. Some folks prefer to use functions. Brubeck supports both.</p>
 
 <h3>MessageHandler Classes</h3>
 
-<p>When a class model is used, the class will be instantiated for the life of the request and then thrown away. This makes building state for each request fairly easy.</p>
+<p>When a class model is used, the class will be instantiated for the life of the request and then thrown away. This keeps our memory requirements nice and light.</p>
 
 <p>Brubeck's <code>MessageHandler</code> design is similar to what you see in <a href="https://github.com/facebook/tornado">Tornado</a>, or <a href="http://webpy.org/">web.py</a>. </p>
 
@@ -108,6 +108,8 @@ config = {
 Brubeck(**config).run()
 </code></pre>
 
+<p>Notice the url regex is <code>^/brubeck</code>. This will put our handler code on <code>http://hostname/brubeck</code>. </p>
+
 <ul>
 <li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_minimal.py">Runnable demo</a></li>
 </ul>
@@ -115,6 +117,8 @@ Brubeck(**config).run()
 <h3>Functions and Decorators</h3>
 
 <p>If you'd prefer to just use a simple function, you instantiate a Brubeck instance and wrap your function with the <code>add_route</code> decorator. </p>
+
+<p>Your function will be given two arguments. First, is the <code>application</code> itself. This provides the function with a hook almost all the information it might need. The second argument, the <code>message</code>, provides all the information available about the request.</p>
 
 <p>That looks like this:</p>
 
@@ -236,6 +240,29 @@ class DemoHandler(WebMessageHandler, UserHandlingMixin):
 <li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_auth.py">Runnable demo</a></li>
 </ul>
 
+<h3>Database Connections</h3>
+
+<p>Database connectivity is provided in the form of a <code>db_conn</code> member on the <code>MessageHandler</code> instances when a <code>db_conn</code> flag is passed to the Brubeck instance.</p>
+
+<p>That looks like this:</p>
+
+<pre><code class="prettyprint">config = {
+    'db_conn': db_conn,
+    ...
+}
+
+app = Brubeck(**config)
+</code></pre>
+
+<p>For people using <code>MessageHandler</code> instances, the database connection is available as <code>self.db_conn</code>.</p>
+
+<p>For people using the function and decorator approach, you can get the database connection off the <code>application</code> argument, <code>application.db_conn</code>.</p>
+
+<p>Query code then looks like this with the database connection as the first argument.</p>
+
+<pre><code class="prettyprint">user = load_user(self.db_conn, username='jd')
+</code></pre>
+
 <h3>Secure Cookies</h3>
 
 <p>If you need a session to persist, you can use Brubeck's secure cookies to track users.</p>
@@ -255,7 +282,7 @@ user_id = self.get_cookie('user_id',
                           secret=self.application.cookie_secret)
 </code></pre>
 
-<p>What you do from there is up to you.</p>
+<p>What you do from there is up to you, but you'll probably be loading the user_id from a database or cache to get the rest of the account info. </p>
 
 <h1>Brubeck.io</h1>
 

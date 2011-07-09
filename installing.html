@@ -15,13 +15,13 @@
 
     <p class="links"><a href="readme.html">Readme</a> // <a href="design.html">Design</a> // <a href="installing.html">Installing</a> // <a href="https://github.com/j2labs/brubeck">Code</a></p>
 
-<h1>Installing the environment</h1>
+<h1>Installing The Environment</h1>
 
-<p>First, we have to install a few things. Brubeck depends on Mongrel2, ZeroMQ and a few python packages.</p>
+<p>First, we have to install a few things.  Brubeck depends on Mongrel2, ZeroMQ and a few python packages.</p>
 
 <p>All three packages live in github, so we'll clone the repos to our Desktop.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop
+<pre><code class="prettyprint">$ cd ~/Desktop/
 $ git clone https://github.com/j2labs/brubeck.git
 $ git clone https://github.com/zedshaw/mongrel2.git
 $ wget http://download.zeromq.org/zeromq-2.1.7.tar.gz 
@@ -30,7 +30,7 @@ $ tar zxf zeromq-2.1.7.tar.gz
 
 <h2>ZeroMQ</h2>
 
-<p>For us, ZeroMQ is actually two pieces: libzmq and pyzmq. libzmq must be installed by hand like you see below.</p>
+<p>ZeroMQ, from a Python perspective, is actually two pieces: libzmq and pyzmq. libzmq must be installed by hand like you see below.</p>
 
 <pre><code class="prettyprint">$ cd ~/Desktop/zeromq-2.1.7    
 $ ./autogen.sh
@@ -48,13 +48,15 @@ $ make  ## for mac ports use: make macports
 $ sudo make install
 </code></pre>
 
-<h2>Python packages &amp; Brubeck</h2>
+<p>There are a few compile options available at the bottom of Mongrel2's <code>Makefile</code>. Take a look if the code above doesn't compile successfully.</p>
+
+<h2>Python Packages &amp; Brubeck</h2>
 
 <p>Brubeck works great with virtualenv. I highly recommend using it. </p>
 
 <p>In fact, let's stop for a second and talk about it.</p>
 
-<h3>virtualenv &amp; virtualenvwrapper</h3>
+<h3>Virtualenv &amp; Virtualenvwrapper</h3>
 
 <p>Virtualenv is a way to construct isolated python environments. Very handy for managing multiple environments in a single machine.</p>
 
@@ -84,7 +86,7 @@ $ workon &lt;env_name&gt;       # Turn on a virtual environment
 <li><a href="http://j2labs.tumblr.com/post/5181438807/quick-dirty-virtualenv-virtualenvwrapper">Quick &amp; Dirty Virtualenv &amp; Virtualenvwrapper</a></li>
 </ul>
 
-<h2>Back to Python packages &amp; Brubeck</h2>
+<h2>Back To Python Packages &amp; Brubeck</h2>
 
 <p>If you have pip installed, you can install everything with the requirements file. </p>
 
@@ -94,7 +96,7 @@ $ pip install -I -r ./requirements.txt
 
 <p>If you don't have <code>pip</code>, you can <code>easy_install</code> the libraries listed.</p>
 
-<h3>Brubeck itself</h3>
+<h3>Brubeck Itself</h3>
 
 <p>As the last step, install Brubeck.</p>
 
@@ -102,15 +104,15 @@ $ pip install -I -r ./requirements.txt
 $ python setup.py install
 </code></pre>
 
-<h1>A demo</h1>
+<h1>A Demo</h1>
 
 <p>Assuming the environment installation went well we can now turn on Brubeck.</p>
 
 <p>First, we setup the Mongrel2 config.</p>
 
 <pre><code class="prettyprint">$ cd ~/Desktop/brubeck/demo
-$ m2sh load -config mongrel2.conf -db dev.db
-$ m2sh start --db dev.db --host localhost
+$ m2sh load -config mongrel2.conf -db the.db
+$ m2sh start -db the.db -host localhost
 </code></pre>
 
 <p>Now we'll turn on a Brubeck instance.</p>
@@ -122,7 +124,7 @@ $ ./demo_minimal.py
 <p>If you see <code>Brubeck v0.x.x online ]------------</code> we can try loading a URL in a browser. 
 Now try <a href="http://localhost:6767/brubeck/">a web request</a>.</p>
 
-<h2>Mongrel2 configuration</h2>
+<h2>Mongrel2 Configuration</h2>
 
 <p>Mongrel2 is a separate process from Brubeck, so it is configured separately.</p>
 
@@ -154,9 +156,11 @@ settings = {"zeromq.threads": 1}
 servers = [brubeck_serv]
 </code></pre>
 
-<p>In short, it says any requests for <code>http://localhost:6767/</code> should be sent to the Brubeck handler. </p>
+<p>In short: any requests for <code>http://localhost:6767/</code> should be sent to the Brubeck handler. </p>
 
-<p>The web server answers requests on port <code>6767</code>. It logs to the <code>./log</code> directory. It also writes a pidfile in the <code>./run</code> to the run directory. </p>
+<p>Don't forget that our Brubeck handler is only configured to answer <code>http://localhost:6767/brubeck</code> for now. You could add another route once you're comfortable building <code>MessageHandler</code>'s</p>
+
+<p>The web server answers requests on port <code>6767</code>. It logs to the <code>./log</code> directory. It also writes a pidfile in the <code>./run</code> directory. </p>
 
 <h1>Brubeck.io</h1>
 
