@@ -19,10 +19,6 @@
 
 <p>Brubeck processes and responds to messages sent from Mongrel2. By splitting the processing into a pipeline of lightweight <a href="http://en.wikipedia.org/wiki/Coroutine">coroutines</a>, Brubeck can handle a large number of tasks simultaneously. Many more tasks than tradition OS threads allow.</p>
 
-<p>Veteran Python hackers can probably skip past the dependencies section.</p>
-
-<p>Please keep reading if you're unfamiliar with ZeroMQ, Eventlet, Mongrel2 or DictShield for a brief introduction to each.</p>
-
 <h2>Goals</h2>
 
 <ul>
@@ -31,6 +27,22 @@
 <li><p><strong>Friendly</strong>: Should be easy for Python hackers of any skill level to use.</p></li>
 <li><p><strong>Pluggable</strong>: Brubeck can speak to any language and any database.</p></li>
 </ul>
+
+<h2>Contributors</h2>
+
+<p>Brubeck wouldn't be what it is without help from:</p>
+
+<ul>
+<li><a href="https://github.com/j2labs">James Dennis</a></li>
+<li><a href="https://github.com/apgwoz">Andrew Gwozdziewycz</a></li>
+<li><a href="https://github.com/orbitz/">Malcolm Matalka</a></li>
+<li><a href="https://github.com/d1on/">Dion Paragas</a></li>
+<li><a href="https://github.com/duaneg">Duane Griffen</a></li>
+</ul>
+
+<p>Veteran Python hackers can probably skip past the dependencies section.</p>
+
+<p>Please keep reading if you're unfamiliar with ZeroMQ, Eventlet, Mongrel2 or DictShield for a brief introduction to each.</p>
 
 <h1>Dependencies</h1>
 
@@ -68,12 +80,12 @@
 <p>The end result is that your code looks synchronous (read: no callback spaghetti)</p>
 
 <ul>
-<li><a href="http://eventlet.net">Evenlet</a>.</li>
+<li><a href="http://eventlet.net">Eventlet</a>.</li>
 </ul>
 
 <h3>Alternatives</h3>
 
-<p>Some folks prefer <a href="http://gevent.org">gevent</a> over eventlet. Brubeck has a branch adding support for that. (Thanks <a href="https://github.com/d1on">d1on</a></p>
+<p>Some folks prefer <a href="http://gevent.org">gevent</a> over eventlet. Brubeck has a branch adding support for that. (Thanks <a href="https://github.com/d1on">d1on</a>)</p>
 
 <ul>
 <li><a href="https://github.com/j2labs/brubeck/tree/gevent">gevent support</a></li>
