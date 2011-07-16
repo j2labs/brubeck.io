@@ -72,7 +72,7 @@ sqlite&gt; select * from route;
 
 <p>Brubeck's job is to generate a response and send it to Mongrel2, which Mongrel2 then then forwards to our user.</p>
 
-<h2>The Demos</h2>
+<h1>The Demos</h1>
 
 <p>On the agenda:</p>
 
@@ -113,7 +113,9 @@ sqlite&gt; select * from route;
         return self.render()
 </code></pre>
 
-<p>The next class, <code>NameHandler</code>, defines it's <code>get()</code> function different than <code>IndexHandler</code>.  This definition includes the parameter <code>name</code>.  Notice that in the <code>urls</code> above we asign <code>NameHandler</code> to pattern <code>'^/class/(\w+)$'</code>.  Whatever string matches <code>(\w+)</code> will be used as the value for <code>name</code>.</p>
+<p>The next class, <code>NameHandler</code>, defines it's <code>get()</code> function differently from <code>IndexHandler</code>.  The new definition includes the parameter <code>name</code>.  Notice that in the <code>urls</code> above we asign <code>NameHandler</code> to pattern <code>'^/class/(\w+)$'</code>.</p>
+
+<p>Whatever matches <code>(\w+)</code> will be the value of the <code>name</code> argument below.</p>
 
 <pre><code class="prettyprint">class NameHandler(WebMessageHandler):
     def get(self, name):
@@ -121,25 +123,29 @@ sqlite&gt; select * from route;
         return self.render()
 </code></pre>
 
-<p>The third handler defined is not a class.  This handler is defined using the function method.  And notice that it also has a <code>name</code> argument tacked on.</p>
+<p>The third handler defined is not a class.  This handler is defined as a function.  And notice that it also has a <code>name</code> argument tacked on.</p>
 
 <pre><code class="prettyprint">def name_handler(application, message, name):
     return http_response('Take five, %s!' % (name), 200, 'OK', {})
 </code></pre>
 
-<p>We put all three in the urls map and instantiate a <code>Brubeck</code> instance.  It's not running yet, but it's ready to go.</p>
+<p>We then map all three URL's to the relevant handlers and instantiate a <code>Brubeck</code> instance.  </p>
 
 <pre><code class="prettyprint">app = Brubeck(**config)
 </code></pre>
 
-<p>But we'll add one more function.  We'll wrap this function with the <code>add_route</code> decorator on our app instance and map it to <code>'^/deco/(?P&lt;name&gt;\w+)$'</code>. This function also has the <code>name</code> variable.</p>
+<p>But hey, we'll add one more function just because we still can.</p>
+
+<p>The <code>add_route</code> decorator is now available to us on the Brubeck instance (<code>app</code>). Wrap any function with this decorator to assign it to a URL pattern and HTTP method. Passing parameters in URL's works fine here too.</p>
 
 <pre><code class="prettyprint">@app.add_route('^/deco/(?P&lt;name&gt;\w+)$', method='GET')
 def new_name_handler(application, message, name):
     return http_response('Take five, %s!' % (name), 200, 'OK', {})
 </code></pre>
 
-<p>Then we turn it on by calling <code>run()</code> and all four URL's can answer requests.  Try this one <a href="http://localhost:6767/class/james">http://localhost:6767/class/james</a>.</p>
+<p>Then we turn it on by calling <code>run()</code> and all four URL's can answer requests.  Try this one: <a href="http://localhost:6767/class/james">http://localhost:6767/class/james</a>.  Or this one: <a href="http://localhost:6767/fun/james">http://localhost:6767/fun/james</a>.  Or this one: <a href="http://localhost:6767/deco/james">http://localhost:6767/deco/james</a>.</p>
+
+<p>The only URL left is the boring one: <a href="http://localhost:6767/">http://localhost:6767/</a>.</p>
 
 <h1>Template Rendering</h1>
 
@@ -234,13 +240,13 @@ curl: (22) The requested URL returned error: 401
 
 <h3>Authentication Tracking</h3>
 
-<p>A cookie was set the first time <code>@web_authenticated</code> was called a cookie because we provided the correct username and password. This doesn't happen automatically. It happened because of these two lines in <code>get_current_user</code>.</p>
+<p>A cookie was set the first time <code>@web_authenticated</code> was called because we provided the correct username and password. This doesn't happen automatically. It happened because of these two lines in <code>get_current_user</code>.</p>
 
 <pre><code class="prettyprint">self.set_cookie('username', username) # DEMO: Don't actually put a
 self.set_cookie('password', password) # password in a cookie...
 </code></pre>
 
-<p>Notice the comment suggesting you shouldn't actually store a password in the cookie. This is done to keep the demo focused. Secure cookies will are covered soon..</p>
+<p>Notice the comment suggesting you shouldn't actually store a password in the cookie. This is done to keep the demo focused. Secure cookies will be covered soon..</p>
 
 <h3>Authenticated Browsing</h3>
 
