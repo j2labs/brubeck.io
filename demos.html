@@ -1,0 +1,267 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <body onload="prettyPrint()">
+    <div id="title">
+      <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+    </div>
+
+    <p class="links"><a href="readme.html">Readme</a> &nbsp;|&nbsp; <a href="design.html">Design</a> &nbsp;|&nbsp; <a href="installing.html">Installing</a> &nbsp;|&nbsp; <a href="demos.html">Demos</a> &nbsp;|&nbsp; <a href="https://github.com/j2labs/brubeck">Code</a></p>
+
+<h1>Learn By Example</h1>
+
+<p>Each demo attempts to explain some of the nuances of Brubeck.  Each example should be run from inside the <a href="https://github.com/j2labs/brubeck/blob/master/demos/">demos</a> directory after Brubeck has been installed.</p>
+
+<p>This document assumes you have already read the README.  If you have not, please read that and come back after.</p>
+
+<p>The first two demos show the two methods of building request handlers: classes and functions.  Then we look at how URL's are handled.  Template rendering is shown for both <a href="http://jinja.pocoo.org/">Jinja2</a> and <a href="http://www.tornadoweb.org/documentation/template.html">Tornado's template system</a>.  Finally, authentication is explained over two demos.</p>
+
+<h2>Kicking Mongrel2's Tires</h2>
+
+<p>Each of these tests can be run underneath the same Mongrel2 instance. You can bring the handlers down and back up without taking Mongrel2 down.</p>
+
+<p>First, we parse the config file into a sqlite database. Configuring the database this way makes the experience of editing configs as easy as editing text, but the database is stored in a programmatically friendly way too via <a href="http://www.sqlite.org/">SQLite</a>.</p>
+
+<p>There is no need to edit the config so we can just load the config into a database using <code>m2sh load</code>.</p>
+
+<pre><code class="prettyprint">$ m2sh load -config mongrel2.conf -db dev.db
+</code></pre>
+
+<p>Now we have a sqlite database representing our config. If you have sqlite installed, open the database and take a look. You can start by typing <code>.tables</code> at the prompt to get a table list.</p>
+
+<pre><code class="prettyprint">$ sqlite3 dev.db 
+sqlite&gt; .tables
+directory  host       mimetype   route      setting  
+handler    log        proxy      server     statistic
+sqlite&gt; select * from route;
+1|/|0|1|1|handler
+2|/media/|0|1|1|dir
+</code></pre>
+
+<p>We can then turn Mongrel2 on with <code>m2sh start</code>.</p>
+
+<pre><code class="prettyprint">$ m2sh start -db the.db -host localhost
+... # lots of output
+[INFO] (src/handler.c:285) Binding handler PUSH socket ipc://127.0.0.1:9999 with identity: 34f9ceee-cd52-4b7f-b197-88bf2f0ec378
+[INFO] (src/handler.c:311) Binding listener SUB socket ipc://127.0.0.1:9998 subscribed to: 
+[INFO] (src/control.c:401) Setting up control socket in at ipc://run/control
+</code></pre>
+
+<p>OK. Mongrel2 is now listening on port 6767 and sending messages down a ZeroMQ push socket, ipc://127.0.0.1:9999</p>
+
+<h3>m2reader.py</h3>
+
+<p>Wanna see what Mongrel2 is actually saying? Turn on <code>m2reader.py</code>. It won't respond with a proper web request, but you can see the entire JSON message passed to Brubeck from Mongrel2.</p>
+
+<pre><code class="prettyprint">$ ./m2reader.py 
+34f9ceee-cd52-4b7f-b197-88bf2f0ec378 0 / 571:{"PATH":"/","x-forwarded-for":"127.0.0.1","accept-language":"en-US,en;q=0.8","accept-encoding":"gzip,deflate,sdch","connection":"keep-alive","accept-charset":"ISO-8859-1,utf-8;q=0.7,*;q=0.3","accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.122 Safari/534.30","host":"localhost:6767","METHOD":"GET","VERSION":"HTTP/1.1","URI":"/","PATTERN":"/"},0:,
+</code></pre>
+
+<p>Brubeck's job is to send response to this request to Mongrel2, which it then then forwards to our user.</p>
+
+<h2>The Demos</h2>
+
+<p>On the agenda:</p>
+
+<ul>
+<li>Classes and Functions</li>
+<li>URL design and handling</li>
+<li>Template rendering</li>
+<li>Authentication</li>
+</ul>
+
+<h1>Classes And Functions</h1>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_minimal.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_minimal.py</a></li>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_noclasses.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_noclasses.py</a></li>
+</ul>
+
+<p>As we saw in the README there are two ways of writing message handlers.  <code>demo_minimal.py</code> implements a class that implements a <code>get()</code> function to answer HTTP GET.  <code>demo_noclasses.py</code> implements a function with it's URL mapping specified with the <code>add_route</code> decorator.</p>
+
+<h1>URL Design And Handling</h1>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_urlargs.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_urlargs.py</a></li>
+</ul>
+
+<p>URL's are matched by regular expression.  Sometimes parameters we need are part of the URL.  Here is a quick glance at the URL's used for this demo.</p>
+
+<pre><code class="prettyprint">urls = [(r'^/class/(\w+)$', NameHandler),
+        (r'^/fun/(?P&lt;name&gt;\w+)$', name_handler),
+        (r'^/', IndexHandler)]
+</code></pre>
+
+<p>In spite of being the last URL listed above, <code>IndexHandler</code> is the first class defined.  This class responds to HTTP GET with the string <code>'Take five!'</code>. That's it.</p>
+
+<pre><code class="prettyprint">class IndexHandler(WebMessageHandler):
+    def get(self):
+        self.set_body('Take five!')
+        return self.render()
+</code></pre>
+
+<p>The next class, <code>NameHandler</code>, defines it's <code>get()</code> function different than <code>IndexHandler</code>.  This definition includes the parameter <code>name</code>.  Notice that in the <code>urls</code> above we asign <code>NameHandler</code> to pattern <code>'^/class/(\w+)$'</code>.  Whatever string matches <code>(\w+)</code> will be used as the value for <code>name</code>.</p>
+
+<pre><code class="prettyprint">class NameHandler(WebMessageHandler):
+    def get(self, name):
+        self.set_body('Take five, %s!' % (name))
+        return self.render()
+</code></pre>
+
+<p>The third handler defined is not a class.  This handler is defined using the function method.  And notice that it also has a <code>name</code> argument tacked on.</p>
+
+<pre><code class="prettyprint">def name_handler(application, message, name):
+    return http_response('Take five, %s!' % (name), 200, 'OK', {})
+</code></pre>
+
+<p>We put all three in the urls map and instantiate a <code>Brubeck</code> instance.  It's not running yet, but it's ready to go.</p>
+
+<pre><code class="prettyprint">app = Brubeck(**config)
+</code></pre>
+
+<p>But we'll add one more function.  We'll wrap this function with the <code>add_route</code> decorator on our app instance and map it to <code>'^/deco/(?P&lt;name&gt;\w+)$'</code>. This function also has the <code>name</code> variable.</p>
+
+<pre><code class="prettyprint">@app.add_route('^/deco/(?P&lt;name&gt;\w+)$', method='GET')
+def new_name_handler(application, message, name):
+    return http_response('Take five, %s!' % (name), 200, 'OK', {})
+</code></pre>
+
+<p>Then we turn it on by calling <code>run()</code> and all four URL's can answer requests.  Try this one <a href="http://localhost:6767/class/james">http://localhost:6767/class/james</a>.</p>
+
+<h1>Template Rendering</h1>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_jinja2.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_jinja2.py</a></li>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_tornado.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_tornado.py</a></li>
+</ul>
+
+<p>Template rendering is adequately covered as part of the README for now.</p>
+
+<h1>Authentication</h1>
+
+<p>Authentication comes in many forms.  The first example will cover the basic system for authenticating requests.  The second demo will combine cookies, templates and a hard coded user to demonstrate a full login system.</p>
+
+<h2>Auth Over POST</h2>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_auth.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_auth.py</a></li>
+</ul>
+
+<p>To place authentication restrictions on any function you can use the <code>@authenticated</code> decorator. The purpose of this decorator is tell the web server to fail with errors sent via the relevant protocol. When using a <code>WebMessageHandler</code> errors will be sent as HTTP level errors. We will discuss another decorator <code>@web_authenticated</code> in the next section.</p>
+
+<p>Here is what using it looks like.</p>
+
+<pre><code class="prettyprint">@authenticated
+def post(self):
+    ...
+</code></pre>
+
+<p>For the purpose of the demonstration I hardcode a <code>User</code> instance with the username 'jd' and the password 'foo'.  Brubeck comes with a <code>User</code> and <code>UserProfile</code> model but we only use the <code>User</code> model here.</p>
+
+<pre><code class="prettyprint">demo_user = User.create_user('jd', 'foo')
+</code></pre>
+
+<p>All <code>get_current_user</code> does is check the request arguments for a username and password and validate them.  Brubeck makes the authenticated user available for you as <code>self.current_user</code>.</p>
+
+<p>Let's try it using it curl.</p>
+
+<pre><code class="prettyprint">$ curl -d "username=jd&amp;password=foo" localhost:6767/brubeck
+jd logged in successfully!
+</code></pre>
+
+<p>Now let's see it fail. We will tell curl to fail silently, meaning it won't print out any returned HTML, so we can see the 401 error Brubeck returns.</p>
+
+<pre><code class="prettyprint">$ curl -f -d "username=jd&amp;password=bar" localhost:6767/brubeck
+curl: (22) The requested URL returned error: 401
+</code></pre>
+
+<p>Someone could build the first draft of an API using this example.  All errors would be passed via HTTP.</p>
+
+<h2>Authenticated Website</h2>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_login.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_login.py</a></li>
+</ul>
+
+<p>This example is considerably more involved.  Let's look at the URL's before we dig in.</p>
+
+<pre><code class="prettyprint">handler_tuples = [
+    (r'^/login', LoginHandler),
+    (r'^/logout', LogoutHandler),
+    (r'^/', LandingHandler),
+]
+</code></pre>
+
+<p>We can probably guess that <code>LoginHandler</code> logs a user in and <code>LogoutHandler</code> logs a user out.  But what happens if we visit <a href="http://localhost:6767/">http://localhost:6767/</a> before logging in?</p>
+
+<h3>Redirection</h3>
+
+<p>Try visiting <a href="http://localhost:6767">http://localhost:6767</a> and you'll be redirected to <a href="http://localhost:6767/login">http://localhost:6767/login</a>. This happens because we wrapped <code>LoginHandler</code>'s <code>get()</code> method with the <code>@web_authenticated</code> decorator. </p>
+
+<pre><code class="prettyprint">class LandingHandler(CustomAuthMixin, Jinja2Rendering):
+    @web_authenticated
+    def get(self):
+        ...
+</code></pre>
+
+<p>Failures to pass authentication are redirected to the application's login_url, as specified in Brubeck's config.</p>
+
+<pre><code class="prettyprint">config = {
+    ...
+    'login_url': '/login',
+}
+</code></pre>
+
+<p>If you need to redirect a user to the login url at any point in your code, you could write the following.</p>
+
+<pre><code class="prettyprint">return self.redirect(self.application.login_url)
+</code></pre>
+
+<p>The implementation of <code>LoginHandler</code> is straight forward. The <code>get()</code> method renders the login template with fields for a username and password. The implementation of <code>post()</code> has the <code>@web_authenticated</code> decorator on it, meaning it expects auth credentials to be provided. If the credentials pass <code>post()</code> then calls <code>self.redirect('/')</code> to send a logged-in user to the landing page.</p>
+
+<h3>Authentication Tracking</h3>
+
+<p>A cookie was set the first time <code>@web_authenticated</code> was called a cookie because we provided the correct username and password. This doesn't happen automatically. It happened because of these two lines in <code>get_current_user</code>.</p>
+
+<pre><code class="prettyprint">self.set_cookie('username', username) # DEMO: Don't actually put a
+self.set_cookie('password', password) # password in a cookie...
+</code></pre>
+
+<p>Notice the comment suggesting you shouldn't actually store a password in the cookie. This is done to keep the demo focused. Secure cookies will are covered soon..</p>
+
+<h3>Authenticated Browsing</h3>
+
+<p>Now that we're logged in, <code>LandingHandler</code> let's us call <code>get()</code> and it renders <code>landing.html</code>. It simply says hello and offers a logout button.</p>
+
+<p>Clicking logout sends us to <a href="http://localhost:6767/logout">http://localhost:6767/logout</a> and <code>LogoutHandler</code> calls <code>self.delete_cookies()</code>. We are no longer authenticated so it sends us the login screen when it's finished.</p>
+
+<h3>Secure Cookies</h3>
+
+<p>Brubeck also supports secure cookies. This is what it looks like to use them.</p>
+
+<p>Setting one:</p>
+
+<pre><code class="prettyprint">self.set_cookie('user_id', username,
+                secret=self.application.cookie_secret)
+</code></pre>
+
+<p>Reading one:</p>
+
+<pre><code class="prettyprint">user_id = self.get_cookie('user_id',
+                          secret=self.application.cookie_secret)
+</code></pre>
+
+<p>The <a href="https://github.com/j2labs/listsurf">List Surf</a> project features secure cookies in it's authentication system.</p>
+
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>
