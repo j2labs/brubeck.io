@@ -80,6 +80,16 @@ img.logo {
     margin-left: 80px;
 }
 
+div#footer {
+    width: 600;
+}
+
+img.footer {
+    margin-top: 20px;
+    margin-left: 200px;
+    margin-bottom: 50px;
+}
+
 p.links {
     font-family: 'Josefin Slab', arial, serif;
     font-size: 16pt;
