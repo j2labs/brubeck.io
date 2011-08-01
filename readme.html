@@ -46,13 +46,14 @@ app.run()
 
 <h2>Features</h2>
 
-<p>Brubeck gets by with a little help from it's friends:</p>
+<p>Brubeck gets by with a little help from its friends:</p>
 
 <ul>
 <li><a href="http://mongrel2.org">Mongrel2</a>: lean &amp; fast, asynchronous web serving</li>
-<li><a href="http://eventlet.net">Eventlet</a>: non-blocking I/O &amp; coroutines</li>
-<li><a href="http://zeromq.org">ZeroMQ</a>: fast messaging &amp; supports most languages</li>
 <li><a href="https://github.com/j2labs/dictshield">DictShield</a>: data modeling &amp; validation with no database opinions</li>
+<li><a href="http://zeromq.org">ZeroMQ</a>: fast messaging &amp; supports most languages</li>
+<li><a href="http://eventlet.net">Eventlet</a>: non-blocking I/O, coroutines &amp; implicit scheduling</li>
+<li><a href="http://gevent.org">Gevent</a>: like eventlet, but uses <code>libevent</code></li>
 </ul>
 
 <p>Please also see this completely unscientific comparison of Brubeck and Tornado:</p>
@@ -61,11 +62,11 @@ app.run()
 <li><a href="https://gist.github.com/882555">500 concurrent connections for 10 seconds</a></li>
 </ul>
 
-<h2>Complete Example: Listsurf</h2>
+<h1>Complete Example: Listsurf</h1>
 
 <p><strong>Listsurf</strong> is a simple to way to save links. Yeah... another delicious clone!</p>
 
-<p>It serves as a basic demonstration of what a complete site looks like when you build with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
+<p>It serves as a basic demonstration of what a complete site looks like when you build with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating, <a href="http://eventlet.net">Eventlet</a> for coroutines and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
 
 <ul>
 <li><a href="https://github.com/j2labs/listsurf">Listsurf on GitHub</a></li>

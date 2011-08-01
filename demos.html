@@ -27,7 +27,7 @@
 
 <p>We begin by building some knowledge of Mongrel2's internals using <code>sqlite3</code> and <code>m2reader.py</code>.</p>
 
-<p>Then there are four sets of demos. The first set contains the two demos from the README that build request handlers using classes or functions.  Then we discuss how URL's are mapped to handlers.  Template rendering is then shown for both <a href="http://jinja.pocoo.org/">Jinja2 templates</a> and <a href="http://www.tornadoweb.org/documentation/template.html">Tornado templates</a>.  This doc is then finished with an explanation of authentication over two final demos.</p>
+<p>Then there are four sets of demos. The first set contains the two demos from the README that build request handlers using classes or functions.  Then we discuss how URL's are mapped to handlers.  Template rendering is then shown for <a href="http://jinja.pocoo.org/">Jinja2</a>, <a href="http://www.tornadoweb.org/documentation/template.html">Tornado templates</a> and <a href="http://www.makotemplates.org/">Mako</a>.  This doc is then finished with an explanation of authentication over two final demos.</p>
 
 <h2>Kicking Mongrel2's Tires</h2>
 
@@ -37,12 +37,12 @@
 
 <p>There is no need to edit the config so we can just load the config into a database using <code>m2sh load</code>.</p>
 
-<pre><code class="prettyprint">$ m2sh load -config mongrel2.conf -db dev.db
+<pre><code class="prettyprint">$ m2sh load -config mongrel2.conf -db the.db
 </code></pre>
 
 <p>Now we have a sqlite database representing our config. If you have sqlite installed, open the database and take a look. You can start by typing <code>.tables</code> at the prompt to get a table list.</p>
 
-<pre><code class="prettyprint">$ sqlite3 dev.db 
+<pre><code class="prettyprint">$ sqlite3 the.db 
 sqlite&gt; .tables
 directory  host       mimetype   route      setting  
 handler    log        proxy      server     statistic
@@ -152,6 +152,7 @@ def new_name_handler(application, message, name):
 <ul>
 <li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_jinja2.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_jinja2.py</a></li>
 <li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_tornado.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_tornado.py</a></li>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_mako.py">https://github.com/j2labs/brubeck/blob/master/demos/demo_mako.py</a></li>
 </ul>
 
 <p>Template rendering is adequately covered as part of the README for now.</p>
