@@ -45,25 +45,31 @@ app.run()
 <p>It serves as a basic demonstration of what a complete site looks like when you build with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating, <a href="http://eventlet.net">Eventlet</a> for coroutines and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
 
 <ul>
-<li><a href="https://github.com/j2labs/listsurf">Listsurf on GitHub</a></li>
+<li><a href="https://github.com/j2labs/listsurf">Listsurf Code</a></li>
 </ul>
 
-<p><strong>Readify</strong> is a more elaborate form of Listsurf. User's have profiles, you can mark things as <em>liked</em>, <em>archived</em> or delete. The links can also be tagged for easy finding. This project also splits the API out from the Web system into two separte processes, each reading from a single Mongrel2.</p>
+<p><strong>Readify</strong> is a more elaborate form of Listsurf.</p>
+
+<p>User's have profiles, you can mark things as liked, archived (out of your stream, kept) or you can delete them. The links can also be tagged for easy finding. This project also splits the API out from the Web system into two separte processes, each reading from a single Mongrel2.</p>
 
 <ul>
-<li><a href="https://github.com/j2labs/readify">Readify</a></li>
+<li><a href="https://github.com/j2labs/readify">Readify Code</a></li>
 </ul>
 
-<p><strong>SpotiChat</strong> is a Spotify app that provides chat for users listening to the same song in Spotify. The chat is handled via persistent coroutines that sleep until an incoming message arrives. Built with <a href="http://redis.io">Redis</a>.</p>
+<p><strong>SpotiChat</strong> is a chat app for spotify user.</p>
+
+<p>SpotiChat provides chat for users listening to the same song with Spotify. The chat is handled via request handlers that go to sleep until incoming messages need to be distributed to connect clients. The messages are backed by <a href="http://redis.io">Redis</a> too.</p>
 
 <ul>
-<li><a href="https://github.com/sethmurphy/SpotiChat-Server">SpotiChat</a></li>
+<li><a href="https://github.com/sethmurphy/SpotiChat-Server">SpotiChat Code</a></li>
 </ul>
 
-<p><strong>no.js</strong> is a javascript-free chat system. Works in IE4!</p>
+<p><strong>no.js</strong> is a javascript-free chat system.</p>
+
+<p>It works by using the old META Refresh trick, combined with long-polling. It even works in IE4! </p>
 
 <ul>
-<li><a href="https://github.com/talos/no.js">No.js</a></li>
+<li><a href="https://github.com/talos/no.js">No.js Code</a></li>
 </ul>
 
 <h1>Contact Us</h1>
