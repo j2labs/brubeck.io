@@ -1,0 +1,201 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
+  <body onload="prettyPrint()">
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
+
+
+<h1>AutoAPI</h1>
+
+<p>Brubeck combines the metaprogramming in DictShield along with the assumption
+that REST is generally similar to CRUD to provide a mechanism for generating
+APIs from DictShield models.</p>
+
+<p>There are two things that must be consider: </p>
+
+<ol>
+<li>Data Processing</li>
+<li>Persistence</li>
+</ol>
+
+<h2>Data Processing</h2>
+
+<p>The data processing is essentially to provide GET, POST, PUT and DELETE for a
+document design. The document provides a mechanism for validating the ID of a
+document, which is useful for both GET and DELETE. It also provides the
+mechanism for validating an entire document, as we'd expect to receive with
+either POST or PUT.</p>
+
+<p>We could define a simple model to look like this:</p>
+
+<pre><code class="prettyprint">class Todo(Document):
+    completed = BooleanField(default=False)
+    text = StringField(required=True)
+    class Meta:
+        id_options = {'auto_fill': True}
+</code></pre>
+
+<p>DictShield provides a way to validate input against this structure. It also
+provides a way to format output, like when we serialize the structure to JSON,
+with some fields removed, based on what permissions are available to the user.</p>
+
+<p>We'll create a <code>Todo</code> instance.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; t = Todo(text='This is some text')
+&gt;&gt;&gt; t.validate()
+True
+</code></pre>
+
+<p>Let's serialize it to a Python dictionary. This is probably what we'd save in
+a database.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; t.to_python()
+{'_types': ['Todo'], 'text': u'This is some text', 'completed': False, '_id': UUID('c4ac6aff-737c-47db-ab07-fbe402b08d1c'), '_cls': 'Todo'}
+</code></pre>
+
+<p>Or maybe we're just gonna store JSON in something.</p>
+
+<pre><code class="prettyprint"> &gt;&gt;&gt; t.to_json()
+ '{"_types": ["Todo"], "text": "This is some text", "completed": false, "_id": "7e48a600-f599-4a3a-9244-73760841f70e", "_cls": "Todo"}'
+</code></pre>
+
+<p>It's useful for APIs too, because you can combine one of it's <code>make_safe</code>
+functions with whatever access rights the user has. DictShield provides the 
+concept of <em>owner</em> and <em>public</em> in the form of a blacklist and a whitelist
+respectively.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; Todo.make_json_ownersafe(t)
+'{"text": "This is some text", "completed": false}'
+&gt;&gt;&gt;
+</code></pre>
+
+<p>If we provide GET and PUT we will need to handle ID fields. DictShield
+documents let us validate individual fields if we want. That looks like this:</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; Todo.id.validate('c4ac6aff-737c-47db-ab07-fbe402b08d1c')
+UUID('c4ac6aff-737c-47db-ab07-fbe402b08d1c')
+</code></pre>
+
+<p>We can see that the returned value is the input coerced into the type of the
+field. </p>
+
+<p>This is what failed validation looks like, notice that the input is a munged
+version of the input above.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; Todo.id.validate('c4ac6aff-737c-47db-ab07-fbe402b0c')
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+  File "/Users/jd/Projects/dictshield/dictshield/fields/base.py", line 178, in validate
+    self.field_name, value)
+dictshield.base.ShieldException: Not a valid UUID value - None:c4ac6aff-737c-47db-ab07-fbe402b0c
+</code></pre>
+
+<h2>Persistence</h2>
+
+<p>Persistence is then handled by way of a <code>QuerySet</code>. A dict based QuerySet,
+called <code>DictQueryset</code>, is provided by default. Other implementations for
+supporting MongoDB, Redis and MySQL are on the way.</p>
+
+<p>The interface to the QuerySets is defined in the <code>AbstractQueryset</code>. We see
+some familiar names defined: <code>create()</code>, <code>read()</code>, <code>update()</code> and <code>destroy()</code>.
+These functions then either call <code>create_one</code> or <code>create_many</code> for each CRUD
+operation.</p>
+
+<p>CRUD doesn't map exactly to REST, but it's close, so Brubeck attempts to
+accurately cover REST's behavior using CRUD operations. It's not a 1:1 mapping.</p>
+
+<p>The <code>DictQueryset</code> then subclasses <code>AbstractQueryset</code> and implements
+<code>create_one</code>, <code>create_many</code>, etc. These functions are focused primarily around
+a document's ID. The ID, as provided by DictShield, is how we identify which
+documents should be deleted or updated or retrieved.</p>
+
+<h2>Putting Both Together</h2>
+
+<p>Putting the two together is a simple process.</p>
+
+<p>First we import the persistence layer and define the data's structure:</p>
+
+<pre><code class="prettyprint">from brubeck.queryset import DictQueryset
+
+class Todo(Document):
+    completed = BooleanField(default=False)
+    text = StringField(required=True)
+    class Meta:
+        id_options = {'auto_fill': True}
+</code></pre>
+
+<p>Then we subclass <code>AutoAPIBase</code> and define two fields, <code>queries</code> and <code>model</code>.
+The model is our Document from above. The queries is whichever queryset we're
+using.</p>
+
+<pre><code class="prettyprint">class TodosAPI(AutoAPIBase):
+    queries = DictQueryset()
+    model = Todo
+</code></pre>
+
+<p>Setup a Brubeck instance as you normally would, but then register the AutoApi
+instance with the app.</p>
+
+<pre><code class="prettyprint">app = Brubeck(...)
+app.register_api(TodosAPI)
+</code></pre>
+
+<p>Done.</p>
+
+<h1>Examples</h1>
+
+<p>Brubeck comes with an AutoAPI example that is slightly more elaborate than what
+we see above.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_autoapi.py">AutoAPI Demo</a></li>
+</ul>
+
+<p>There is also an example where Brubeck's AutoAPI is used in conjunction with
+the well known Todo list javascript demo.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/todos">Todos</a></li>
+</ul>
+
+  </div>
+</div>
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>

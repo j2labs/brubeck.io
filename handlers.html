@@ -1,0 +1,133 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
+  <body onload="prettyPrint()">
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
+
+
+<h1>Message Handlers</h1>
+
+<p>Let's take a look at that demo handler from before.</p>
+
+<pre><code class="prettyprint">class DemoHandler(WebMessageHandler):
+    def get(self):
+        self.set_body('Take five')
+        return self.render()
+
+options = {
+    'handler_tuples': [(r'^/', DemoHandler)],
+    'msg_conn': WSGIConnection(port=6767),
+}
+
+app = Brubeck(**options)
+app.run()
+</code></pre>
+
+<p>The <code>DemoHandler</code> class has a <code>get()</code> implementation, so we know that handler answers HTTP GET and that handler is mapped to the root URL, '/'. </p>
+
+<p>Brubeck is also configured to run as a WSGI server on port 6767. Turn the app on and it will answer requests at http://localhost:6767.</p>
+
+<h2>Handling Requests</h2>
+
+<p>The framework can be used for different requirements. It can be lean and lightweight for high throughput or you can fatten it up and use it for rendering pages in a database backed CMS.</p>
+
+<p>The general architecture of the system is to map requests for a specific URL to some <a href="http://docs.python.org/library/functions.html#callable">callable</a> for processing the request. The configuration attempts to match handlers to URL's by inspecting a list of <code>(url pattern, callable)</code> tuples. First regex to match provides the callable.</p>
+
+<p>Some people like to use classes as handlers. Some folks prefer to use functions. Brubeck supports both.</p>
+
+<p>The HTTP methods allowed are: GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT. </p>
+
+<h3>MessageHandler Classes</h3>
+
+<p>When a class model is used, the class will be instantiated for the life of the request and then thrown away. This keeps our memory requirements nice and light.</p>
+
+<p>Brubeck's <code>MessageHandler</code> design is similar to what you see in <a href="https://github.com/facebook/tornado">Tornado</a>, or <a href="http://webpy.org/">web.py</a>. </p>
+
+<p>To answer HTTP GET requests, implement <code>get()</code> on a WebMessageHandler instance.</p>
+
+<pre><code class="prettyprint">class DemoHandler(WebMessageHandler):
+    def get(self):
+        self.set_body('Take five!')
+        return self.render()
+</code></pre>
+
+<p>Then we add <code>DemoHandler</code> to the routing config and instantiate a Brubeck instance. </p>
+
+<pre><code class="prettyprint">urls = [(r'^/brubeck', DemoHandler)]
+config = {
+    'handler_tuples': urls,
+    ...
+}
+
+Brubeck(**config).run()
+</code></pre>
+
+<p>Notice the url regex is <code>^/brubeck</code>. This will put our handler code on <code>http://hostname/brubeck</code>. (Probably <a href="http://localhost:6767/brubeck">http://localhost:6767/brubeck</a>).</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_minimal.py">Runnable demo</a></li>
+</ul>
+
+<h3>Functions and Decorators</h3>
+
+<p>If you'd prefer to just use a simple function, you instantiate a Brubeck instance and wrap your function with the <code>add_route</code> decorator. </p>
+
+<p>Your function will be given two arguments. First, is the <code>application</code> itself. This provides the function with a hook almost all the information it might need. The second argument, the <code>message</code>, provides all the information available about the request.</p>
+
+<p>That looks like this:</p>
+
+<pre><code class="prettyprint">app = Brubeck(mongrel2_pair=('ipc://127.0.0.1:9999', 
+                             'ipc://127.0.0.1:9998'))
+
+@app.add_route('^/brubeck', method='GET')
+def foo(application, message):
+    return http_response('Take five!', 200, 'OK', {})
+
+app.run()
+</code></pre>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_noclasses.py">Runnable demo</a></li>
+</ul>
+
+  </div>
+</div>
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>

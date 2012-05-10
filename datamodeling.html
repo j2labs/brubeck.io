@@ -1,0 +1,209 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
+  <body onload="prettyPrint()">
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
+
+
+<h1>Data Modeling</h1>
+
+<p>Brubeck uses <a href="https://github.com/j2labs/dictshield">DictShield</a> for modeling. </p>
+
+<p>DictShield offers input validation and structuring without taking a stance on what database you should be using. There are many good reasons to use all kinds of databases. DictShield only cares about Python dictionaries. If you can get your data into those, DictShield will handle the rest. </p>
+
+<p>DictShield strives to be database agnostic in the same way that Mongrel2 is language agnostic.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/dictshield">DictShield</a></li>
+</ul>
+
+<h2>A Look At The Code</h2>
+
+<p>Let's say we're going to store a BlogPost and all of it's comments in a single structure. Maybe we'll even keep a copy of the author information there too.</p>
+
+<p>An <code>Author</code> will have some information we only want to share with the author, like the email address associated with a post. But we want every user to be able to see the author's username and name, so those will be public fields.</p>
+
+<pre><code class="prettyprint">class Author(EmbeddedDocument):
+    name = StringField()
+    username = StringField()
+    email = EmailField()
+    a_setting = BooleanField()  # private
+    is_active = BooleanField()  # private
+    _private_fields=['is_active']
+    _public_fields=['username', 'name']
+</code></pre>
+
+<p>A <code>Comment</code> will contain the comment text, username and email address of the commenter. We only show the email address to the owner of the blog though, so it's not listedd as a public field.</p>
+
+<pre><code class="prettyprint">class Comment(EmbeddedDocument):
+    text = StringField()
+    username = StringField()
+    email = EmailField()   
+    _public_fields=['username', 'text']
+</code></pre>
+
+<p>And now the <code>BlogPost</code>. It will have a title, content, author, a post date, the list of comments, and a flag for whether or not it's a deleted entry (eg. a <em>tombstone</em>).</p>
+
+<pre><code class="prettyprint">class BlogPost(Document):
+    title = StringField()    
+    content = StringField()
+    author = EmbeddedDocumentField(Author)
+    post_date = DateTimeField(default=datetime.datetime.now)
+    comments = ListField(EmbeddedDocumentField(Comment))
+    deleted = BooleanField()   
+    _private_fields=['personal_thoughts']
+    _public_fields=['author', 'content', 'comments']
+</code></pre>
+
+<p>Notice that the <code>BlogPost</code> has a <code>ListField</code> containing a list of <code>Comments</code> objects. It also has an <code>EmbededDocumentField</code> anytime it's using another DictShield model as the field's value.</p>
+
+<h2>Using It</h2>
+
+<p>This is what it might look to instantiate the structures.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; author = Author(name='james', username='j2d2', email='jdennis@gmail.com',
+...                 a_setting=True, is_active=True)
+&gt;&gt;&gt; comment1 = Comment(text='This post was awesome!', username='bro',
+...                    email='bru@dudegang.com')
+&gt;&gt;&gt; comment2 = Comment(text='This post is ridiculous', username='barbie',
+...                    email='barbie@dudegang.com')
+&gt;&gt;&gt; content = """Retro single-origin coffee chambray stumptown, scenester VHS
+... bicycle rights 8-bit keytar aesthetic cosby sweater photo booth. Gluten-free
+... trust fund keffiyeh dreamcatcher skateboard, williamsburg yr salvia tattooed
+... """
+&gt;&gt;&gt; blogpost = BlogPost(title='Hipster Hodgepodge', author=author, content=content,
+...                     comments=[comment1, comment2], deleted=False)
+</code></pre>
+
+<p>We'd probably call <code>to_python()</code> to make the data suitable for saving in a database. This process converts the values exactly as they're found into a dictionary of Python values.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; blogpost.to_python()
+{
+    '_types': ['BlogPost'], 
+    '_cls': 'BlogPost'
+    'post_date': datetime.datetime(2012, 4, 22, 13, 6, 50, 530609), 
+    'deleted': False, 
+    'title': u'Hipster Hodgepodge', 
+    'content': u'Retro single-origin coffee chambray stumptown, scenester VHS\nbicycle rights 8-bit keytar aesthetic cosby sweater photo booth. Gluten-free\ntrust fund keffiyeh dreamcatcher skateboard, williamsburg yr salvia tattooed\n', 
+    'author': {
+        'username': u'j2d2', 
+        '_types': ['Author'], 
+        'name': u'james', 
+        'a_setting': True, 
+        'is_active': True, 
+        '_cls': 'Author', 
+        'email': u'jdennis@gmail.com'
+    }, 
+    'comments': [
+        {
+            'username': u'bro',
+            'text': u'This post was awesome!', 
+            '_types': ['Comment'], 
+            'email': u'bru@dudegang.com', 
+            '_cls': 'Comment'
+        },
+        {
+            'username': u'barbie', 
+            'text': u'This post is ridiculous', 
+            '_types': ['Comment'], 
+            'email': u'barbie@dudegang.com', 
+            '_cls': 'Comment'
+        }
+    ], 
+}
+</code></pre>
+
+<p>DictShield also has the concept of an owner formalized in the <code>make_*_ownersafe()</code> function, which can serialize to either Python or JSON. Notice that the date is converted to <a href="http://en.wikipedia.org/wiki/ISO_8601">iso8601 format</a> too.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; BlogPost.make_json_ownersafe(blogpost)
+{
+    "post_date": "2012-04-22T13:06:50.530609", 
+    "deleted": false, 
+    "title": "Hipster Hodgepodge", 
+    "content": "Retro single-origin coffee chambray stumptown, scenester VHS\nbicycle rights 8-bit keytar aesthetic cosby sweater photo booth. Gluten-free\ntrust fund keffiyeh dreamcatcher skateboard, williamsburg yr salvia tattooed\n"
+    "author": {
+        "username": "j2d2", 
+        "a_setting": true, 
+        "name": "james", 
+        "email": "jdennis@gmail.com"
+    }, 
+    "comments": [
+        {
+            "username": "bro",
+            "text": "This post was awesome!", 
+            "email": "bru@dudegang.com"
+        }, 
+        {
+            "username": "barbie", 
+            "text": "This post is ridiculous", 
+            "email": "barbie@dudegang.com"
+        }
+    ],
+}
+</code></pre>
+
+<p>This is what the document looks like serialized for the general public. The same basic mechanism is at work as the other serilializations, but this has removed the data that is not for public consumption, like email addresses.</p>
+
+<pre><code class="prettyprint">&gt;&gt;&gt; BlogPost.make_json_publicsafe(blogpost)
+{
+    "content": "Retro single-origin coffee chambray stumptown, scenester VHS\nbicycle rights 8-bit keytar aesthetic cosby sweater photo booth. Gluten-free\ntrust fund keffiyeh dreamcatcher skateboard, williamsburg yr salvia tattooed\n"
+    "author": {
+        "username": "j2d2", 
+        "name": "james"
+    }, 
+    "comments": [
+        {
+            "username": "bro", 
+            "text": "This post was awesome!"
+        }, 
+        {
+            "username": "barbie", 
+            "text": "This post is ridiculous"
+        }
+    ],
+}
+</code></pre>
+
+<p>Notice that in all of these cases, the permissions and the serialization was done recursively across the structures and embedded structures.</p>
+
+  </div>
+</div>
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>

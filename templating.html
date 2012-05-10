@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
+  <body onload="prettyPrint()">
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
+
+
+<h1>Templates</h1>
+
+<p>Brubeck currently supports <a href="http://jinja.pocoo.org/">Jinja2</a>, <a href="http://www.tornadoweb.org/documentation#templates">Tornado</a>, <a href="http://www.makotemplates.org/">Mako</a> or <a href="https://github.com/defunkt/pystache">Pystache</a> templates.</p>
+
+<p>Template support is contained in <code>brubeck.templates</code> as rendering handlers. Each handler will attach a <code>render_template</code> function to your handler and overwrite the default <code>render_error</code> to produce templated errors messages.</p>
+
+<p>Using a template system is then as easy as calling <code>render_template</code> with the template filename and some context, just like you're used to.</p>
+
+<h2>Jinja2 Example</h2>
+
+<p>Using Jinja2 template looks like this.</p>
+
+<pre><code class="prettyprint">from brubeck.templating import Jinja2Rendering
+
+class DemoHandler(WebMessageHandler, Jinja2Rendering):
+    def get(self):
+        context = {
+            'name': 'J2D2',
+        }
+        return self.render_template('success.html', **context)
+</code></pre>
+
+<p>The corresponding HTML looks like this:</p>
+
+<pre><code class="prettyprint">&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Jinja2 Render&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;p&gt;Take five, {{ name }}!&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_jinja2.py">Runnable demo</a></li>
+<li><a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/jinja2">Demo templates</a></li>
+</ul>
+
+<h3>Template Loading</h3>
+
+<p>In addition to using a rendering handler, you need to provide the path to your
+templates.</p>
+
+<p>That looks like this:</p>
+
+<pre><code class="prettyprint">from brubeck.templating import load_jinja2_env
+
+config = {
+    template_loader=load_jinja2_env('./templates/jinja2')
+    ...
+}
+</code></pre>
+
+<p>Using a function here keeps the config lightweight and flexible.
+<code>template_loader</code> needs to be some function that returns an environment. </p>
+
+<h2>Demos</h2>
+
+<ul>
+<li>Jinja2 (<a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_jinja2.py">Code</a>, <a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/jinja2">Templates</a>)</li>
+<li>Mako (<a href="https://github.com/j2labs/brubeck/tree/master/demos/demo_mako.py">Code</a>, <a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/mako">Templates</a>)</li>
+<li>Tornado (<a href="https://github.com/j2labs/brubeck/tree/master/demos/demo_tornado.py">Code</a>, <a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/tornado">Templates</a>)</li>
+<li>Mustache (<a href="https://github.com/j2labs/brubeck/tree/master/demos/demo_mustache.py">Code</a>, <a href="https://github.com/j2labs/brubeck/tree/master/demos/templates/mustache">Templates</a>)</li>
+</ul>
+
+<p>Is your favorite template system not in this list? Please take a look at the other implementations. It's probably easy to add support.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/brubeck/templating.py">brubeck.templating</a></li>
+</ul>
+
+  </div>
+</div>
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>

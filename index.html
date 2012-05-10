@@ -8,18 +8,51 @@
     <script type="text/javascript" src="js/prettify.js"></script>
   </head>
 
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
   <body onload="prettyPrint()">
-    <div id="title">
-      <a href="index.html"><img class="logo" src="img/logo.png" /></a>
-    </div>
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
 
-    <p class="links"><a href="readme.html">Readme</a> &nbsp;|&nbsp; <a href="design.html">Design</a> &nbsp;|&nbsp; <a href="installing.html">Installing</a> &nbsp;|&nbsp; <a href="demos.html">Demos</a> &nbsp;|&nbsp; <a href="https://github.com/j2labs/brubeck">Code</a></p>
 
 <h1>What Is Brubeck?</h1>
 
 <p><strong>Brubeck</strong> is a flexible Python web framework that aims to make the process of building scalable web services easy.</p>
 
-<p>The <a href="readme.html">documentation</a> goes into much more detail about Brubeck's design. There, you will find lots of code samples for building request handlers, authentication, rendering templates, managing databases and more.</p>
+<p>Brubeck's design is discussed in depth in the provided documentation. There, you will find lots of code samples for building request handlers, authentication, rendering templates, managing databases and more.</p>
+
+<h2>Goals</h2>
+
+<ul>
+<li><p><strong>Be Fast</strong>: Brubeck is currently very fast. We intend to keep it that way.</p></li>
+<li><p><strong>Scalable</strong>: Massive scaling capabilities should be available out of the box.</p></li>
+<li><p><strong>Friendly</strong>: Should be easy for Python hackers of any skill level to use.</p></li>
+<li><p><strong>Pluggable</strong>: Brubeck can speak to any language and any database.</p></li>
+</ul>
 
 <h1>Example: Hello World</h1>
 
@@ -31,9 +64,10 @@
         return self.render()
 
 urls = [(r'^/', DemoHandler)]
-mongrel2_pair = ('ipc://127.0.0.1:9999', 'ipc://127.0.0.1:9998')
+msg_conn = Mongrel2Connection('ipc://127.0.0.1:9999',
+                              'ipc://127.0.0.1:9998')
 
-app = Brubeck(mongrel2_pair=mongrel2_pair,
+app = Brubeck(msg_conn=msg_conn,
               handler_tuples=urls)
 app.run()
 </code></pre>
@@ -42,7 +76,7 @@ app.run()
 
 <p><strong>Listsurf</strong> is a simple to way to save links. Yeah... another delicious clone!</p>
 
-<p>It serves as a basic demonstration of what a complete site looks like when you build with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating, <a href="http://eventlet.net">Eventlet</a> for coroutines and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
+<p>It serves as a basic demonstration of what a complete site looks like when you build with Brubeck. It has authentication with secure cookies, offers a JSON API, uses <a href="http://jinja.pocoo.org/">Jinja2</a> for templating and stores data in <a href="http://mongodb.org">MongoDB</a>.</p>
 
 <ul>
 <li><a href="https://github.com/j2labs/listsurf">Listsurf Code</a></li>
@@ -50,7 +84,11 @@ app.run()
 
 <p><strong>Readify</strong> is a more elaborate form of Listsurf.</p>
 
-<p>User's have profiles, you can mark things as liked, archived (out of your stream, kept) or you can delete them. The links can also be tagged for easy finding. This project also splits the API out from the Web system into two separte processes, each reading from a single Mongrel2.</p>
+<p>User's have profiles, you can mark things as liked, archived (out of your stream, kept) or you can delete them. The links can also be tagged for easy finding. This project also splits the API out from the Web system into two separate processes, each reading from a single Mongrel2.</p>
+
+<p>You could actually run four Web processes and four API processes as easily as just turning each of them on four times.</p>
+
+<p>This project roughly represents a typical organization of Brubeck's components. Most notably is the separation of handlers, models and queries into isolated python files.</p>
 
 <ul>
 <li><a href="https://github.com/j2labs/readify">Readify Code</a></li>
@@ -72,14 +110,22 @@ app.run()
 <li><a href="https://github.com/talos/no.js">No.js Code</a></li>
 </ul>
 
+<h2>Contributors</h2>
+
+<p>Brubeck wouldn't be what it is without help from:</p>
+
+<p><a href="https://github.com/j2labs">James Dennis</a>, <a href="https://github.com/apgwoz">Andrew Gwozdziewycz</a>, <a href="https://github.com/orbitz/">Malcolm Matalka</a>, <a href="https://github.com/d1on/">Dion Paragas</a>, <a href="https://github.com/duaneg">Duane Griffin</a>, <a href="https://github.com/faruken">Faruk Akgul</a>, <a href="https://github.com/sethmurphy">Seth Murphy</a>, <a href="https://github.com/talos">John Krauss</a>, <a href="https://github.com/gone">Ben Beecher</a>, <a href="https://github.com/jordanorelli">Jordan Orelli</a>, <a href="https://github.com/mghlarsen">Michael Larsen</a>, <a href="https://github.com/m2w">Moritz</a>, <a href="https://github.com/dimazest">Dmitrijs Milajevs</a>, <a href="https://github.com/slinkp">Paul Winkler</a>, <a href="https://github.com/st0w">Chris McCulloh</a>, <a href="https://github.com/nmandery">Nico Mandery</a>, <a href="https://github.com/victortrac">Victor Trac</a></p>
+
 <h1>Contact Us</h1>
 
 <p>If you discover bugs or want to suggest features, please use our <a href="https://github.com/j2labs/brubeck/issues">issue tracker</a>.</p>
 
 <p>Also consider joining our mailing list: <a href="http://groups.google.com/group/brubeck-dev">brubeck-dev</a>.</p>
 
-<p>Some of us hang out in #brubeck on freenode too.</p>
+<p>You can find some of us in #brubeck on freenode too.</p>
 
+  </div>
+</div>
   <div id="footer">
     <img class="footer" src="img/footer.png">
   </div>

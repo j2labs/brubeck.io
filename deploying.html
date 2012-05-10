@@ -1,0 +1,216 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
+  <body onload="prettyPrint()">
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
+
+
+<h1>Deploying</h1>
+
+<p>Brubeck can support Mongrel2 or WSGI. </p>
+
+<h2>Mongrel2</h2>
+
+<p><a href="http://mongrel2.org">Mongrel2</a> is an asynchronous and language-agnostic (!) web server by <a href="http://zedshaw.com/">Zed Shaw</a>. Mongrel2 handles everything relevant to HTTP or Web Sockets and has facilities for passing request handling to external services via <a href="http://zguide.zeromq.org/">ZeroMQ guide</a> sockets. </p>
+
+<p>This decoupling of the webserver from the request handling allows for interesting web service topologies. It also allows for easy scaling too, as servers can be added or taken down as necessary with restarting or HUPing anything.</p>
+
+<p>If you are using Mongrel2, you will need to turn Mongrel2 on in addition to running a Brubeck process. This can be a little tedious while developing, but it leads to efficient production deployment capabilities similar to that of HAProxy or Nginx.</p>
+
+<p>Interacting with Mongrel2 is best done with the <code>m2sh</code> command.</p>
+
+<pre><code class="prettyprint">$ m2sh load -config mongrel2.conf -db the.db
+$ m2sh start -db the.db -every
+</code></pre>
+
+<p>Mongrel2 is now running.</p>
+
+<p>If you want Mongrel2 to run on port 80 you will need to use sudo. This also causes Mongrel2 to run in the background and detach from the command shell. In this case, you can stop Mongrel2 using another m2sh command.</p>
+
+<pre><code class="prettyprint">$ m2sh stop -db the.db -every
+</code></pre>
+
+<h2>WSGI</h2>
+
+<p>Brubeck supports WSGI by way of it's concurrency systems. This means you can put it behind <a href="http://gunicorn.org/">Gunicorn</a> or run Brubeck apps on <a href="http://www.heroku.com/">Heroku</a>.</p>
+
+<p>From an app design point of view, it is a one line change to specify a WSGI handler instead of a Mongrel2 handler.</p>
+
+<ul>
+<li><a href="http://www.gevent.org/gevent.wsgi.html">Gevent WSGI</a></li>
+<li><a href="http://eventlet.net/doc/modules/wsgi.html">Eventlet WSGI</a></li>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_wsgi.py">Brubeck WSGI Demo</a></li>
+</ul>
+
+<h2>Deployment Environments</h2>
+
+<p>There are multiple ways to deploy Brubeck. A vanilla Ubuntu system on AWS or
+Linode can work well. A Heroku dyno can work.</p>
+
+<h3>Quickness</h3>
+
+<p>Quickness is a project for experimenting. It helps experimenters by creating
+a simple environment for deploying big ideas, like Brubeck and all of it's
+dependencies or Erlang or Clojure &amp; Java &amp; any other things worth having when
+using Clojure.</p>
+
+<p>It is built with Ubuntu in mind and works nicely with
+<a href="http://vagranup.com">Vagrant</a>.</p>
+
+<p>A typical Quickness install of Brubeck looks like this:</p>
+
+<pre><code class="prettyprint">$ git clone https://github.com/j2labs/quickness.git
+$ source quickness/env/profile
+Q: quick_new
+Q: quick_install brubeck
+</code></pre>
+
+<p>Quickness is developed by the same folks that build Brubeck &amp; DictShield. This deployment strategy uses Mongrel2 as the web server. This involves compiling and installing both ZeroMQ and Mongrel2, but Quickness will handle all of that for you.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/quickness">Quickness</a></li>
+</ul>
+
+<h3>Heroku</h3>
+
+<p>To deploy to Heroku your app needs to be configured to use WSGI, which you'll see in the snippet below, and y</p>
+
+<p>Install <a href="https://toolbelt.herokuapp.com/">Heroku Toolbelt</a></p>
+
+<p>Prepare the project directory</p>
+
+<pre><code class="prettyprint">$ mkdir herokuapp &amp;&amp; cd herokuapp
+</code></pre>
+
+<p>Initialize our git repo and pull Brubeck in</p>
+
+<pre><code class="prettyprint">$ git init
+$ git submodule add git://github.com/j2labs/brubeck.git brubeck
+$ git submodule init
+$ git submodule update
+</code></pre>
+
+<p>Initialize our Heroku app</p>
+
+<pre><code class="prettyprint">$ heroku login
+$ heroku create --stack cedar
+</code></pre>
+
+<p>Set up the environment</p>
+
+<pre><code class="prettyprint">$ virtualenv --distribute venv
+$ source venv/bin/activate
+$ pip install dictshield ujson gevent
+$ pip freeze -l &gt; requirements.txt
+</code></pre>
+
+<p>Create .gitignore.</p>
+
+<pre><code class="prettyprint">$ cat .gitignore
+venv
+*.pyc
+</code></pre>
+
+<p>Create Procfile</p>
+
+<pre><code class="prettyprint">$ cat Procile
+web: python app.py
+</code></pre>
+
+<p>Create .env</p>
+
+<pre><code class="prettyprint">$ cat .env
+PYTHONPATH=brubeck
+</code></pre>
+
+<p>Create app.py</p>
+
+<pre><code class="prettyprint">import os
+
+from brubeck.request_handling import Brubeck, WebMessageHandler
+from brubeck.connections import WSGIConnection
+
+class DemoHandler(WebMessageHandler):
+    def get(self):
+        self.set_body("Hello, from Brubeck!")
+        return self.render()
+
+config = {
+    'msg_conn': WSGIConnection(int(os.environ.get('PORT', 6767))),
+    'handler_tuples': [
+        (r'^/', DemoHandler)
+    ]
+}
+
+if __name__ == '__main__':
+    app = Brubeck(**config)
+    app.run()
+</code></pre>
+
+<p>Try it out</p>
+
+<pre><code class="prettyprint">$ foreman start
+</code></pre>
+
+<p>You should now be able to visit <a href="http://localhost:5000">localhost:5000</a>. Notice
+that this uses port 5000 instead of the usual 6767.</p>
+
+<p>Is it working? Great! Let's put it on Heroku</p>
+
+<pre><code class="prettyprint">git add .
+git commit -m "init"
+git push heroku master
+</code></pre>
+
+<p>Seems like Heroku will clobber whatever PYTHONPATH you set when you first push a Python project, so set it now</p>
+
+<pre><code class="prettyprint">heroku config:add PYTHONPATH=/app/brubeck/:/app/
+</code></pre>
+
+<p>Navigate to your new Brubeck app on Heroku!</p>
+
+<h3>Gunicorn</h3>
+
+<p>Instructions coming soon.</p>
+
+  </div>
+</div>
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>

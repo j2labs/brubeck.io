@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <title>Brubeck: a Mongrel2 handler</title>
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link rel=stylesheet type="text/css" href="media/style.css"> 
+    <link rel=stylesheet type="text/css" href="media/prettify.css"> 
+    <meta name="viewport" content="width=600;" /> 
+    <script type="text/javascript" src="js/prettify.js"></script>
+  </head>
+
+  <div id="title">
+    <a href="index.html"><img class="logo" src="img/logo.png" /></a>
+  </div>
+  <body onload="prettyPrint()">
+    <div id="body">
+	<div class="left">
+	    <ul class="links">
+	      <li class="header">Brubeck:</li>
+	      <li><a href="index.html">Overview</a></li>
+	      <li><a href="installing.html">Installing</a></li>
+	      <li><a href="demos.html">Demos</a></li>
+	      <li><a href="deploying.html">Deploying</a></li>
+	      <li><a href="license.html">License</a></li>
+	      <li class="header">Features:</li>
+	      <li><a href="handlers.html">Handlers</a></li>
+	      <li><a href="templating.html">Templating</a></li>
+	      <li><a href="authentication.html">Authentication</a></li>
+	      <li><a href="datamodeling.html">Data Modeling</a></li>
+	      <li><a href="autoapi.html">AutoAPI</a></li>
+	      <li><a href="fileuploading.html">Uploading Files</a></li>
+	      <li><a href="querysets.html">Querysets</a></li>
+	      <li class="header">Architecture:</li>
+	      <li><a href="concurrency.html">Concurrency</a></li>
+	      <li><a href="zeromq.html">ZeroMQ</a></li>
+	      <li><a href="dependencies.html">Dependencies</a></li>
+	      <li><a href="https://github.com/j2labs/brubeck">Code</a></li>
+	    </ul>
+	</div>
+	<div class="right">
+
+
+<h1>Dependencies</h1>
+
+<p>Brubeck leverages a few awesome Python packages and some other stuff, mainly in C, for a significant piece of it's capabilities. Credit must be given where credit is due. </p>
+
+<h2>Web Serving</h2>
+
+<p>Brubeck can support Mongrel2 or WSGI. </p>
+
+<h3>Mongrel2</h3>
+
+<p><a href="http://mongrel2.org">Mongrel2</a> is an asynchronous and language-agnostic (!!) web server by <a href="http://zedshaw.com/">Zed Shaw</a>. Mongrel2 handles everything relevant to HTTP or Web Sockets and has facilities for passing request handling to external services via <a href="http://zguide.zeromq.org/">ZeroMQ guide</a> sockets. </p>
+
+<p>This decoupling of the webserver from the request handling allows for interesting web service topologies. It also allows for easy scaling too, as servers can be added or taken down as necessary with restarting or HUPing anything.</p>
+
+<h3>WSGI</h3>
+
+<p>Brubeck also supports WSGI. This means you can put it behind <a href="http://gunicorn.org/">Gunicorn</a> or run Brubeck apps on <a href="http://www.heroku.com/">Heroku</a>.</p>
+
+<p>WSGI support is provided by each of the concurrency options, which are described next.</p>
+
+<h2>Concurrency</h2>
+
+<p>Brubeck is basically a pipeline of coroutines attempting to fulfill web requests.  Each <code>MessageHandler</code> is executed as a coroutine, implemented as a <code>greenlet</code>.</p>
+
+<p><a href="http://packages.python.org/greenlet/">Greenlet's</a> are a Python implementation of coroutines optimized for fast context-switching.  Greenlet's can be thought of as similar to generators that don't require a <code>yield</code> statement.</p>
+
+<p>Coroutines, combined with a scheduler (aka "a hub"), make for an interesting and lightweight alternative to threads.  Greenlets are so lightweight that we don't have to think too hard on how many we spawn, and Brubeck handlers each request as a single coroutine.</p>
+
+<h3>Eventlet</h3>
+
+<p>Eventlet is an implementation of a scheduling system.  In addition to scheduling, it will convert your blocking calls into nonblocking automatically as part of it's scheduling.</p>
+
+<p>This makes building nonblocking, asynchronous systems look the same as building blocking, synchronous systems. The kind that normally live in threads.</p>
+
+<p>Eventlet was started by developers at Linden Labs and used to support Second Life.</p>
+
+<p>Install <code>envs/eventlet.reqs</code> to use eventlet.</p>
+
+<ul>
+<li><a href="http://eventlet.net">Eventlet</a>.</li>
+<li><a href="http://eventlet.net/doc/history.html">Eventlet History</a></li>
+</ul>
+
+<h3>Gevent</h3>
+
+<p>Gevent was started by Denis Bilenko as an alternative to Eventlet.  It is similar in design but uses an event loop implemented in C; <code>libevent</code>.  It will be soon be on the newer <code>libev</code>.</p>
+
+<p>Tests suggest that Gevent's performance characteristics are both lightweight and very fast.</p>
+
+<p>Install the <code>envs/gevent.reqs</code> to use gevent.</p>
+
+<ul>
+<li><a href="http://gevent.org">Gevent</a></li>
+<li><a href="http://gevent.org/intro.html">Gevent Introduction</a></li>
+</ul>
+
+<h3>Alternatives</h3>
+
+<p>There are also reasonable arguments for explicit context switching.  Or perhaps even a different language.  If you prefer that model, I recommend the systems below:</p>
+
+<ul>
+<li><a href="http://twistedmatrix.com/">Twisted Project</a></li>
+<li><a href="http://nodejs.org">Node.js</a></li>
+<li><a href="https://github.com/eventmachine/eventmachine/wiki">EventMachine</a></li>
+</ul>
+
+<h2>DictShield</h2>
+
+<p>DictShield offers input validation and structuring without taking a stance on what database you should be using. There are many good reasons to use all kinds of databases. DictShield only cares about Python dictionaries. If you can get your data into those, DictShield will handle the rest. </p>
+
+<p>DictShield strives to be database agnostic in the same way that Mongrel2 is language agnostic.</p>
+
+<ul>
+<li><a href="https://github.com/j2labs/dictshield">DictShield</a></li>
+</ul>
+
+  </div>
+</div>
+  <div id="footer">
+    <img class="footer" src="img/footer.png">
+  </div>
+  </body>
+</html>

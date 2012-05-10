@@ -39,33 +39,42 @@
 	<div class="right">
 
 
-<h1>Copyright 2012 J2 Labs LLC. All rights reserved.</h1>
+<h1>Authentication</h1>
 
-<p>Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:</p>
+<p>Authentication is provided by decorating functions with the <code>@web_authenticated</code> decorator. This decorator expects the handler to have a <code>current_user</code> property that returns either an authenticated <code>User</code> model or None. </p>
 
-<ol>
-<li><p>Redistributions of source code must retain the above copyright notice,
- this list of conditions and the following disclaimer.</p></li>
-<li><p>Redistributions in binary form must reproduce the above copyright notice,
- this list of conditions and the following disclaimer in the documentation
- and/or other materials provided with the distribution.</p></li>
-</ol>
+<p>The <code>UserHandlingMixin</code> provides functionality for authenticating a user and creating the <code>current_user</code> property. </p>
 
-<p>THIS SOFTWARE IS PROVIDED BY J2 Labs LLC ``AS IS'' AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-EVENT SHALL J2 Labs LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<p>The work that's required will depend on how you build your system. The authentication framework uses a DictShield Document to create the <code>User</code> model, so you can implement a database query or check user information in a sorted CSV. Either way, you still get the authentication framework you need.</p>
 
-<p>The views and conclusions contained in the software and documentation are
-those of the authors and should not be interpreted as representing official
-policies, either expressed or implied, of J2 Labs LLC.</p>
+<p>In practice, this is what your code looks like.</p>
+
+<pre><code class="prettyprint">from brubeck.auth import web_authenticated, UserHandlingMixin
+
+class DemoHandler(WebMessageHandler, UserHandlingMixin):
+    @web_authenticated
+    def post(self):
+        ...
+</code></pre>
+
+<p>The <code>User</code> model in brubeck.auth will probably serve as a good basis for your needs. A Brubeck user looks roughly like below.</p>
+
+<pre><code class="prettyprint">class User(Document):
+    """Bare minimum to have the concept of a User.
+    """
+    username = StringField(max_length=30, required=True)
+    email = EmailField(max_length=100)
+    password = StringField(max_length=128)
+    is_active = BooleanField(default=False)
+    last_login = LongField(default=curtime)
+    date_joined = LongField(default=curtime)        
+    ...
+</code></pre>
+
+<ul>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_auth.py">Basic Demo</a></li>
+<li><a href="https://github.com/j2labs/brubeck/blob/master/demos/demo_login.py">Login System</a></li>
+</ul>
 
   </div>
 </div>
