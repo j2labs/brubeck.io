@@ -45,34 +45,34 @@
 
 <p>All three packages live in github, so we'll clone the repos to our Desktop.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/
-$ git clone https://github.com/j2labs/brubeck.git
-$ git clone https://github.com/zedshaw/mongrel2.git
-$ wget http://download.zeromq.org/zeromq-3.2.2.tar.gz 
-$ tar zxf zeromq-3.2.2.tar.gz
+<pre><code class="prettyprint">cd ~/Desktop/
+git clone https://github.com/j2labs/brubeck.git
+git clone https://github.com/zedshaw/mongrel2.git
+wget http://download.zeromq.org/zeromq-3.2.2.tar.gz 
+tar zxf zeromq-3.2.2.tar.gz
 </code></pre>
 
 <h2>ZeroMQ</h2>
 
 <p>ZeroMQ, from a Python perspective, is actually two pieces: libzmq and pyzmq. libzmq must be installed by hand like you see below.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/zeromq-3.2.2   
-$ ./autogen.sh
-$ ./configure  ## for mac ports use: ./configure --prefix=/opt/local
-$ make 
-$ sudo make install
+<pre><code class="prettyprint">cd ~/Desktop/zeromq-3.2.2   
+./autogen.sh
+./configure  ## for mac ports use: ./configure --prefix=/opt/local
+make 
+sudo make install
 </code></pre>
 
 <h2>Mongrel2</h2>
 
 <p>Mongrel2 is also painless to setup.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/mongrel2
-$ make  ## for mac ports use: make macports
+<pre><code class="prettyprint">cd ~/Desktop/mongrel2
+make  ## for mac ports use: make macports
 ## Mongrel 2 requires sqlite3 and dev libraries of sqlite3
-$ sudo apt-get install sqlite3
-$ sudo apt-get install libsqlite3-dev
-$ sudo make install
+sudo apt-get install sqlite3
+sudo apt-get install libsqlite3-dev
+sudo make install
 </code></pre>
 
 <p>There are a few compile options available at the bottom of Mongrel2's <code>Makefile</code>. Take a look if the code above doesn't compile successfully.</p>
@@ -98,9 +98,9 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 <p>By sourcing virtualenvwrapper, you get a simple interface for creating, managing and removing virutalenv environments.</p>
 
-<pre><code class="prettyprint">$ mkvirtualenv &lt;env_name&gt; # Creates a virtual environment
-$ deactivate              # Turn off a virtual environment
-$ workon &lt;env_name&gt;       # Turn on a virtual environment
+<pre><code class="prettyprint">mkvirtualenv &lt;env_name&gt; # Creates a virtual environment
+deactivate              # Turn off a virtual environment
+workon &lt;env_name&gt;       # Turn on a virtual environment
 </code></pre>
 
 <p>For more information, see my quick &amp; dirty howto.</p>
@@ -113,20 +113,20 @@ $ workon &lt;env_name&gt;       # Turn on a virtual environment
 
 <p>If you have pip installed, you can install everything with the requirements file. </p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/brubeck
-$ pip install -I -r ./envs/brubeck.reqs
+<pre><code class="prettyprint">cd ~/Desktop/brubeck
+pip install -I -r ./envs/brubeck.reqs
 </code></pre>
 
 <p>We now choose either eventlet or gevent and install the relevent requirements file in the same directory.</p>
 
 <p>To install <code>eventlet</code> support:</p>
 
-<pre><code class="prettyprint">$ pip install -I -r ./envs/eventlet.reqs
+<pre><code class="prettyprint">pip install -I -r ./envs/eventlet.reqs
 </code></pre>
 
 <p>To install <code>gevent</code> support:</p>
 
-<pre><code class="prettyprint">$ pip install -I -r ./envs/gevent.reqs
+<pre><code class="prettyprint">pip install -I -r ./envs/gevent.reqs
 </code></pre>
 
 <p>Note that gevent requires <code>libevent</code>, which should be available on the package-manager of your choice.</p>
@@ -135,8 +135,8 @@ $ pip install -I -r ./envs/brubeck.reqs
 
 <p>As the last step, install Brubeck.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/brubeck
-$ python setup.py install
+<pre><code class="prettyprint">cd ~/Desktop/brubeck
+python setup.py install
 </code></pre>
 
 <h1>A Demo</h1>
@@ -145,15 +145,15 @@ $ python setup.py install
 
 <p>First, we setup the Mongrel2 config.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/brubeck/demos
-$ m2sh load -config mongrel2.conf -db the.db
-$ m2sh start -db the.db -host localhost
+<pre><code class="prettyprint">cd ~/Desktop/brubeck/demos
+m2sh load -config mongrel2.conf -db the.db
+m2sh start -db the.db -host localhost
 </code></pre>
 
 <p>Now we'll turn on a Brubeck instance.</p>
 
-<pre><code class="prettyprint">$ cd ~/Desktop/brubeck/demos
-$ ./demo_minimal.py
+<pre><code class="prettyprint">cd ~/Desktop/brubeck/demos
+./demo_minimal.py
 </code></pre>
 
 <p>If you see <code>Brubeck v0.x.x online ]------------</code> we can try loading a URL in a browser. 
